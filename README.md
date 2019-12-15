@@ -1,11 +1,18 @@
 # Getty
-A Java getter-call chaining library that allows handling exceptions at any level in the getter call
-chain
+A Java getter-call chaining library
+
+
+## Requirements
+* Java 8+ (functional interfaces, lambda methods, streams)
+* Maven (**TODO:** make this a proper module)
 
 
 ## What is it?
 Getty is a library that aims to help with chaining long getter calls on Java objects. It also adds
 the ability to handle exceptions and/or null values at every link on the call-chain.
+
+It uses no reflection whatsoever. Instead, the library mainly utilizes functional interfaces (and
+subsequently lambda methods) that were introduced in Java 8.
 
 Of course, its use isn't limited to this use case, but it was created with this purpose in mind.
 
@@ -143,7 +150,7 @@ Integer value = Getty.of(a)
     .get();
 ```
 
-#### Default values
+#### Returning a default value when a getter call returns null
 ```java
 Integer value = null;
 
@@ -177,7 +184,7 @@ try {
 Integer value = Getty.of(a)
     .get(a -> a.getB())
     .get(b -> b.getC(), (b, exception) -> new C())
-    .getOrDefault(c -> c.getD(), c -> new D()) // This can either be a value, supplier, or function
+    .getOrDefault(c -> c.getD(), () -> new D()) // This can either be a value, supplier, or function
     .get(d -> d.getE())
     .get();
 ```
@@ -230,7 +237,7 @@ Integer b2Value = b
 To see a more in-depth demonstration of the caching mechanism, take a look at the `chainCaching`
 test case in [GettyTest.java](src/test/java/org/haozhang/getty/GettyTest.java).
 
-### Is this library guaranteed to be thread-safe?
+## Is this library guaranteed to be thread-safe?
 **Short answer: No.**
 
 You should take great care with using this in highly-concurrent and time-critical environments.
@@ -246,6 +253,6 @@ If you find an issue with thread-safety, let me know or create a pull request wi
 
 
 ## How do I use it?
-TODO:
+**TODO:** Add examples
 
-You can also refer to the **Why** section above for more examples.
+You can also refer to the [**Why**](#why) section above for more examples.

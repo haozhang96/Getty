@@ -19,7 +19,7 @@ import static org.haozhang.getty.ExceptionHandlerFunction.THROW_NULL_POINTER_EXC
  * <br/>
  * TODO:
  *
- * @param <T> The type of the value currently held by this {@link Getty} instance (potentially on a
+ * @param <T> The type of the object currently held by this {@link Getty} instance (potentially on a
  *   chain)
  */
 @SuppressWarnings("unchecked")
@@ -27,17 +27,17 @@ public abstract class Getty<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Getty.class);
 
     /**
-     * Hi
+     * The object currently held by this {@link Getty} instance
      */
     protected final T object;
 
     /**
-     *
+     * The root object used to start this {@link Getty} chain (from {@link #of(Object)})
      */
     protected final Object root;
 
     /**
-     * Construct an instance of {@link Getty} with a currently-bound object, as well as a root
+     * Construct an instance of {@link Getty} with an object that it will hold, as well as a root
      *   object which should be the object used to start the Getty chain.
      * <br/>
      *
@@ -53,8 +53,8 @@ public abstract class Getty<T> {
      * This is used to keep track of the Getty instances created by the chain for removal upon
      *   calling an appropriate terminal method (such as {@link #get()}).
      *
-     * @param object The object to bind this {@link Getty} instance to
-     * @param root The object used to start the Getty chain
+     * @param object The object to be held by this {@link Getty} instance
+     * @param root The root object used to start this Getty chain
      */
     protected Getty(T object, Object root) {
         this.object = object;
@@ -300,7 +300,7 @@ public abstract class Getty<T> {
     /**
      * Begin a Getty chain and return the head.
      *
-     * @param object The object to bind to the head of the Getty chain
+     * @param object The object to be held by the head of the Getty chain
      * @param <T>
      * @return
      */
