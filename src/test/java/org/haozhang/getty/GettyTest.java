@@ -127,6 +127,22 @@ public class GettyTest {
         assertThat(value, equalTo(1d));
     }
 
+    @Test
+    public void getOrDefault_whenGetterReturnsNull_thenReturnDefaultValue() {
+        final Integer value = Getty.of(MAP)
+            .getOrDefault(GETNULL, DEFAULT)
+            .get();
+        assertThat(value, equalTo(DEFAULT));
+    }
+
+    @Test
+    public void getOrDefault_whenGetterReturnsValue_thenReturnGetterValue() {
+        final Integer value = Getty.of(MAP)
+            .getOrDefault(GET0, DEFAULT)
+            .get();
+        assertThat(value, equalTo(0));
+    }
+
     @Test(expected = NullPointerException.class)
     public void getNonNull_givenNoExceptionHandler_whenGetterReturnsNull_thenThrowNullPointerException() {
         Getty.of(MAP)
@@ -143,21 +159,5 @@ public class GettyTest {
             })
             .get();
         assertThat(value, equalTo(DEFAULT));
-    }
-
-    @Test
-    public void getOrDefault_whenGetterReturnsNull_thenReturnDefaultValue() {
-        final Integer value = Getty.of(MAP)
-            .getOrDefault(GETNULL, DEFAULT)
-            .get();
-        assertThat(value, equalTo(DEFAULT));
-    }
-
-    @Test
-    public void getOrDefault_whenGetterReturnsValue_thenReturnGetterValue() {
-        final Integer value = Getty.of(MAP)
-            .getOrDefault(GET0, DEFAULT)
-            .get();
-        assertThat(value, equalTo(0));
     }
 }

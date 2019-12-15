@@ -1,14 +1,15 @@
 package org.haozhang.getty;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ExceptionHandledGetty<T> extends Getty<T> {
-    protected static final Map<Object, LinkedHashSet<ExceptionHandledGetty<?>>> CACHE_MAP =
+    protected static final Map<Object, Set<ExceptionHandledGetty<?>>> CACHE_MAP =
         new ConcurrentHashMap<>();
-    protected static final ExceptionHandledGetty<?> NULL =
-        new ExceptionHandledGetty<>(null, null);
+    protected static final ExceptionHandledGetty<?> NULL = new ExceptionHandledGetty<>(null, null);
 
     protected ExceptionHandledGetty(T object, Object root) {
         super(object, root);
@@ -20,11 +21,24 @@ public class ExceptionHandledGetty<T> extends Getty<T> {
     }
 
     @Override
+    public <R> ExceptionHandledGetty<R> getOrDefault(Getter<T, R> getter, R defaultValue) {
+        return handled(rawGetOrDefault(getter, defaultValue), root);
+    }
+
+    @Override
     public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
-        R defaultValue
+        Supplier<R> defaultValueSupplier
     ) {
-        return handled(rawGetOrDefault(getter, defaultValue), root);
+        return handled(rawGetOrDefault(getter, defaultValueSupplier), root);
+    }
+
+    @Override
+    public <R> ExceptionHandledGetty<R> getOrDefault(
+        Getter<T, R> getter,
+        Function<T, R> defaultValueFunction
+    ) {
+        return handled(rawGetOrDefault(getter, defaultValueFunction), root);
     }
 
     @Override

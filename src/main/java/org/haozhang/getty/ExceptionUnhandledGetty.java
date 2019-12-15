@@ -1,11 +1,13 @@
 package org.haozhang.getty;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ExceptionUnhandledGetty<T> extends Getty<T> {
-    protected static final Map<Object, LinkedHashSet<ExceptionUnhandledGetty<?>>> CACHE_MAP =
+    protected static final Map<Object, Set<ExceptionUnhandledGetty<?>>> CACHE_MAP =
         new ConcurrentHashMap<>();
     protected static final ExceptionUnhandledGetty<?> NULL =
         new ExceptionUnhandledGetty<>(null, null);
@@ -20,11 +22,24 @@ public class ExceptionUnhandledGetty<T> extends Getty<T> {
     }
 
     @Override
+    public <R> ExceptionUnhandledGetty<R> getOrDefault(Getter<T, R> getter, R defaultValue) {
+        return unhandled(rawGetOrDefault(getter, defaultValue), root);
+    }
+
+    @Override
     public <R> ExceptionUnhandledGetty<R> getOrDefault(
         Getter<T, R> getter,
-        R defaultValue
+        Supplier<R> defaultValueSupplier
     ) {
-        return unhandled(rawGetOrDefault(getter, defaultValue), root);
+        return unhandled(rawGetOrDefault(getter, defaultValueSupplier), root);
+    }
+
+    @Override
+    public <R> ExceptionUnhandledGetty<R> getOrDefault(
+        Getter<T, R> getter,
+        Function<T, R> defaultValueFunction
+    ) {
+        return unhandled(rawGetOrDefault(getter, defaultValueFunction), root);
     }
 
     @Override

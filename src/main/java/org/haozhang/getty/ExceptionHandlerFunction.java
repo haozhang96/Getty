@@ -19,7 +19,6 @@ public interface ExceptionHandlerFunction<T, R> {
     static <T, R> ExceptionHandlerConsumer<T> toConsumer(
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return (object, exception) ->
-            exceptionHandler.handleException(object, exception);
+        return (object, exception) -> exceptionHandler.handleException(object, exception);
     }
 }
