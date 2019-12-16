@@ -1,16 +1,13 @@
 package org.haozhang.getty;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ExceptionUnhandledGetty<T> extends Getty<T> {
-    protected static final Map<Object, Set<ExceptionUnhandledGetty<?>>> CACHE_MAP =
+    protected static final Map<Object, Map<Object, ExceptionUnhandledGetty<?>>> CACHE =
         new ConcurrentHashMap<>();
-    protected static final ExceptionUnhandledGetty<?> NULL =
-        new ExceptionUnhandledGetty<>(null, null);
 
     protected ExceptionUnhandledGetty(T object, Object root) {
         super(object, root);

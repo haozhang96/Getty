@@ -3,9 +3,8 @@ package org.haozhang.getty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -19,20 +18,28 @@ import static org.haozhang.getty.ExceptionHandlerFunction.THROW_NULL_POINTER_EXC
  * <br/>
  * TODO:
  *
- * @param <T> The type of the object currently held by this {@link Getty} instance (potentially on a
- *   chain)
+ * @param <T> The type of the object held by this {@link Getty} instance (potentially on a chain)
  */
 @SuppressWarnings("unchecked")
 public abstract class Getty<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Getty.class);
 
     /**
-     * The object currently held by this {@link Getty} instance
+     * Sentinel object used as a workaround for null keys and values in {@link ConcurrentHashMap}
+     */
+    private static final Object NULL_SENTINEL = new Object();
+
+    /**
+     * The object held by this {@link Getty} instance
+     * <br/>
+     *
+     * Note to internal users: do not use this directly as it may hold the special
+     *   {@code NULL_SENTINEL} value; you should use {@link #rawGet()} instead.
      */
     protected final T object;
 
     /**
-     * The root object used to start this {@link Getty} chain (from {@link #of(Object)})
+     * The root object used to start this {@link Getty} chain (from the {@link #of(Object)} call)
      */
     protected final Object root;
 
@@ -50,15 +57,15 @@ public abstract class Getty<T> {
      *   point, call this constructor with {@code map} as the {@code root} parameter.
      * <br/>
      *
-     * This is used to keep track of the Getty instances created by the chain for removal upon
-     *   calling an appropriate terminal method (such as {@link #get()}).
+     * This is used to keep track of the {@link Getty} instances created by the chain for removal
+     *   upon calling an appropriate terminal method, such as {@link #get()}.
      *
      * @param object The object to be held by this {@link Getty} instance
      * @param root The root object used to start this Getty chain
      */
     protected Getty(T object, Object root) {
         this.object = object;
-        this.root = null != root ? root : object;
+        this.root = root;
     }
 
     //==============================================================================================
@@ -66,33 +73,33 @@ public abstract class Getty<T> {
     //==============================================================================================
 
     /**
-     * Retrieve the currently-bound object and remove all of the cached {@link Getty} instances
-     *   created since the start of this Getty chain.
+     * Retrieve the object held by this {@link Getty} instance and remove all of the cached
+     *   {@link Getty} instances created since the start of this Getty chain.
      * <br/>
      * If you would like to keep those instances cached for later use, use {@link #getAndCache()}
      *   instead.
      *
-     * @return The currently-bound object
+     * @return The object held by this {@link Getty} instance
      */
     public T get() {
         removeChainCache();
-        return object;
+        return rawGet();
     }
 
     /**
-     * Retrieve the currently-bound object but keep all of the {@link Getty} instances created since
-     *   the start of this Getty chain cached.
+     * Retrieve the object held by this {@link Getty} instance but keep all of the {@link Getty}
+     *   instances created since the start of this Getty chain cached.
      * <br/>
      * If you would like to remove those instances from the cache, use {@link #get()} instead.
      *
-     * @return The currently-bound object
+     * @return The object held by this {@link Getty} instance
      */
     public T getAndCache() {
-        return object;
+        return rawGet();
     }
 
     //==============================================================================================
-    // Implementation-specific Chaining Methods
+    // Potentially Exception-unhandled Chaining Methods
     //==============================================================================================
 
     public abstract <R> Getty<R> get(Getter<T, R> getter);
@@ -112,7 +119,7 @@ public abstract class Getty<T> {
     public abstract <R> Getty<R> getNonNull(Getter<T, R> getter);
 
     //==============================================================================================
-    // Generic Exception-handled Chaining Methods
+    // Exception-handled Chaining Methods
     //==============================================================================================
 
     public <R> ExceptionHandledGetty<R> get(
@@ -129,7 +136,7 @@ public abstract class Getty<T> {
         return handled(rawGet(getter, exceptionHandler), root);
     }
 
-    public <R> Getty<R> getOrDefault(
+    public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
         R defaultValue,
         ExceptionHandlerFunction<T, R> exceptionHandler
@@ -137,7 +144,7 @@ public abstract class Getty<T> {
         return handled(rawGetOrDefault(getter, defaultValue, exceptionHandler), root);
     }
 
-    public <R> Getty<R> getOrDefault(
+    public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
         Supplier<R> defaultValueSupplier,
         ExceptionHandlerFunction<T, R> exceptionHandler
@@ -145,7 +152,7 @@ public abstract class Getty<T> {
         return handled(rawGetOrDefault(getter, defaultValueSupplier, exceptionHandler), root);
     }
 
-    public <R> Getty<R> getOrDefault(
+    public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
         Function<T, R> defaultValueFunction,
         ExceptionHandlerFunction<T, R> exceptionHandler
@@ -153,14 +160,14 @@ public abstract class Getty<T> {
         return handled(rawGetOrDefault(getter, defaultValueFunction, exceptionHandler), root);
     }
 
-    public <R> Getty<R> getNonNull(
+    public <R> ExceptionHandledGetty<R> getNonNull(
         Getter<T, R> getter,
         ExceptionHandlerConsumer<T> exceptionHandler
     ) {
         return handled(rawGetNonNull(getter, exceptionHandler), root);
     }
 
-    public <R> Getty<R> getNonNull(
+    public <R> ExceptionHandledGetty<R> getNonNull(
         Getter<T, R> getter,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
@@ -170,6 +177,16 @@ public abstract class Getty<T> {
     //==============================================================================================
     // Chaining Helper Methods
     //==============================================================================================
+
+    /**
+     * Retrieve the object held by this {@link Getty} instance while handling the null sentinel
+     *   value.
+     *
+     * @return The object held by this {@link Getty} instance
+     */
+    protected T rawGet() {
+        return object == NULL_SENTINEL ? null : object;
+    }
 
     protected <R> R rawGet(Getter<T, R> getter) {
         return rawGet(getter, (ExceptionHandlerFunction<T, R>) RETURN_NULL);
@@ -221,7 +238,7 @@ public abstract class Getty<T> {
         R defaultValue,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        final R value = get(getter, exceptionHandler).object;
+        final R value = get(getter, exceptionHandler).rawGet();
         return null != value ? value : defaultValue;
     }
 
@@ -230,7 +247,7 @@ public abstract class Getty<T> {
         Supplier<R> defaultValueSupplier,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        final R value = get(getter, exceptionHandler).object;
+        final R value = get(getter, exceptionHandler).rawGet();
         return null != value ? value : defaultValueSupplier.get();
     }
 
@@ -239,7 +256,7 @@ public abstract class Getty<T> {
         Function<T, R> defaultValueFunction,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        final R value = get(getter, exceptionHandler).object;
+        final R value = get(getter, exceptionHandler).rawGet();
         return null != value ? value : defaultValueFunction.apply(object);
     }
 
@@ -258,7 +275,7 @@ public abstract class Getty<T> {
         Getter<T, R> getter,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        final R value = get(getter, exceptionHandler).object;
+        final R value = get(getter, exceptionHandler).rawGet();
         if (null == value) {
             return exceptionHandler.handleException(null, new NullPointerException());
         }
@@ -271,26 +288,18 @@ public abstract class Getty<T> {
 
     @SuppressWarnings("rawtypes")
     private void removeChainCache() {
-        Map<Object, Set<Getty<?>>> cacheMap;
-        if (ExceptionUnhandledGetty.class.equals(getClass())) {
-            cacheMap = (Map) ExceptionUnhandledGetty.CACHE_MAP;
+        Map<Object, Map<Object, Getty<?>>> cache;
+        if (ExceptionUnhandledGetty.class == getClass()) {
+            cache = (Map) ExceptionUnhandledGetty.CACHE;
         } else {
-            cacheMap = (Map) ExceptionHandledGetty.CACHE_MAP;
+            cache = (Map) ExceptionHandledGetty.CACHE;
         }
 
-        final Iterator<Map.Entry<Object, Set<Getty<?>>>> iterator = cacheMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Object, Set<Getty<?>>> cache = iterator.next();
-            if (cache.getKey() == root) {
-                LOGGER.trace(
-                    "Removing chain cache for {}: object={}, root={}, cache={}",
-                    this, object, root, cache.getValue()
-                );
-                cache.getValue().clear();
-                iterator.remove();
-                return;
-            }
-        }
+        // LOGGER.info("Removing chain cache: getty={}, object={}, root={}", this, object, root);
+        cache.computeIfPresent(root, (__, chainCache) -> {
+            chainCache.clear();
+            return null; // Mark the cache chain container for removal by the garbage collector.
+        });
     }
 
     //==============================================================================================
@@ -305,6 +314,7 @@ public abstract class Getty<T> {
      * @return
      */
     public static <T> ExceptionUnhandledGetty<T> of(T object) {
+        Objects.requireNonNull(object, "The object cannot be null.");
         return unhandled(object, object);
     }
 
@@ -313,8 +323,7 @@ public abstract class Getty<T> {
             object,
             root,
             ExceptionUnhandledGetty::new,
-            ExceptionUnhandledGetty.CACHE_MAP,
-            ExceptionUnhandledGetty.NULL
+            ExceptionUnhandledGetty.CACHE
         );
     }
 
@@ -323,8 +332,7 @@ public abstract class Getty<T> {
             object,
             root,
             ExceptionHandledGetty::new,
-            ExceptionHandledGetty.CACHE_MAP,
-            ExceptionHandledGetty.NULL
+            ExceptionHandledGetty.CACHE
         );
     }
 
@@ -332,32 +340,17 @@ public abstract class Getty<T> {
         T object,
         Object root,
         BiFunction<T, Object, G> constructor,
-        Map<Object, Set<G>> cacheMap,
-        G nullInstance
+        Map<Object, Map<Object, G>> cache
     ) {
+        // Use the special null sentinel value for the ConcurrentHashMaps.
         if (null == object) {
-            // Return the special null-bounded Getty instance.
-            return nullInstance;
-        } else if (null == root) {
-            // Use the to-be-bound object as the root of the new Getty chain.
-            root = object;
+            object = (T) NULL_SENTINEL;
         }
 
-        //
-        Set<G> cache = cacheMap.computeIfAbsent(root, __ -> ConcurrentHashMap.newKeySet());
-
-        // Attempt to find a cached Getty instance bound to this object with the
-        //   same root object.
-        G instance = cache.stream()
-            .filter(cachedGetty -> cachedGetty.object == object)
-            .findAny().orElse(null);
-
-        // If a Getty instance does not exist, create one and cache it.
-        if (null == instance) {
-            instance = constructor.apply(object, root);
-            cache.add(instance);
-        }
-
-        return instance;
+        // Update the cache multi-map atomically.
+        // See https://dzone.com/articles/java-8-concurrenthashmap-atomic-updates.
+        return cache
+            .computeIfAbsent(root, __ -> new ConcurrentHashMap<>())
+            .computeIfAbsent(object, _object -> constructor.apply((T) _object, root));
     }
 }
