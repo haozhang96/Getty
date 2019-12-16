@@ -170,7 +170,6 @@ public abstract class Getty<T> {
         );
     }
 
-
     public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
         R defaultValue,

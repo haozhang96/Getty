@@ -29,42 +29,6 @@ public class GettyTest {
     private static final Integer DEFAULT = 123;
 
     @Test
-    public void chainCaching() {
-        // Check Getty instance caching.
-        final Getty<Map<Integer, Integer>> a = Getty.of(MAP);
-        final Getty<Map<Integer, Integer>> b = Getty.of(MAP);
-        final Getty<Integer> aGet0 = a.get(GET0);
-        final Getty<Integer> bGet0 = b.get(GET0);
-        assertThat(a, sameInstance(b)); // Should be the same Getty instance
-        assertThat(bGet0, sameInstance(aGet0)); // So should the Getty instances on their getter chains
-        assertThat(bGet0, not(sameInstance(a.get(GET1)))); // But obviously not for different getter output values
-
-        // Call the terminal getter but keep the Getty chain cached.
-        final Integer aValue = aGet0.getAndCache();
-        final Integer bValue = bGet0.getAndCache();
-        assertThat(bValue, equalTo(aValue));
-
-        // Make sure the Getty instances are still cached.
-        final Getty<Map<Integer, Integer>> c = Getty.of(MAP);
-        final Getty<Integer> cGet0 = c.get(GET0);
-        assertThat(c, sameInstance(a));
-        assertThat(c, sameInstance(b));
-        assertThat(cGet0, sameInstance(aGet0));
-        assertThat(cGet0, sameInstance(bGet0));
-
-        // Call the terminal getter but remove the Getty chain cache. This is the usual case for one-time chains.
-        final Integer cValue = cGet0.get();
-        assertThat(cValue, equalTo(aValue));
-
-        // Make sure the Getty instances are no longer cached.
-        final Getty<Map<Integer, Integer>> d = Getty.of(MAP);
-        final Getty<Integer> dGet0 = d.get(GET0);
-        assertThat(d, not(sameInstance(a)));
-        assertThat(dGet0, not(sameInstance(aGet0))); // Should be a brand new instance
-        assertThat(dGet0, sameInstance(a.get(GET0))); // But if we call a.get() again, it should return the same instance since d.get() was cached
-    }
-
-    @Test
     public void unhandledGetty_case1() {
         final Double value = Getty.of(MAP)
             .get(GET0)
@@ -159,5 +123,41 @@ public class GettyTest {
             })
             .get();
         assertThat(value, equalTo(DEFAULT));
+    }
+
+    @Test
+    public void chainCaching() {
+        // Check Getty instance caching.
+        final Getty<Map<Integer, Integer>> a = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.of(MAP);
+        final Getty<Integer> aGet0 = a.get(GET0);
+        final Getty<Integer> bGet0 = b.get(GET0);
+        assertThat(a, sameInstance(b)); // Should be the same Getty instance
+        assertThat(bGet0, sameInstance(aGet0)); // So should the Getty instances on their getter chains
+        assertThat(bGet0, not(sameInstance(a.get(GET1)))); // But obviously not for different getter output values
+
+        // Call the terminal getter but keep the Getty chain cached.
+        final Integer aValue = aGet0.getAndCache();
+        final Integer bValue = bGet0.getAndCache();
+        assertThat(bValue, equalTo(aValue));
+
+        // Make sure the Getty instances are still cached.
+        final Getty<Map<Integer, Integer>> c = Getty.of(MAP);
+        final Getty<Integer> cGet0 = c.get(GET0);
+        assertThat(c, sameInstance(a));
+        assertThat(c, sameInstance(b));
+        assertThat(cGet0, sameInstance(aGet0));
+        assertThat(cGet0, sameInstance(bGet0));
+
+        // Call the terminal getter but remove the Getty chain cache. This is the usual case for one-time chains.
+        final Integer cValue = cGet0.get();
+        assertThat(cValue, equalTo(aValue));
+
+        // Make sure the Getty instances are no longer cached.
+        final Getty<Map<Integer, Integer>> d = Getty.of(MAP);
+        final Getty<Integer> dGet0 = d.get(GET0);
+        assertThat(d, not(sameInstance(a)));
+        assertThat(dGet0, not(sameInstance(aGet0))); // Should be a brand new instance
+        assertThat(dGet0, sameInstance(a.get(GET0))); // But if we call a.get() again, it should return the same instance since d.get() was cached
     }
 }

@@ -17,7 +17,7 @@ System.out.println(value); // NaN
 
 
 ## Requirements
-* Java 8+ (functional interfaces, lambda methods, streams)
+* Java 8+ (functional interfaces and lambda methods)
 * Maven (**TODO:** make this a proper module)
 
 
@@ -259,9 +259,10 @@ You should take great care with using this in highly-concurrent and time-critica
 Although I have taken some preliminary actions to lessen the potential problems of multi-threaded
 use, I cannot guarantee the thread-safety of this library's operations.
 
-The caching mechanism is built with *supposedly* thread-safe containers from the standard library,
-such as `ConcurrentHashMap` and `ConcurrentHashMap.KeySetView`. I am currently researching the
-thread-safety of their element traversal and removal. 
+The caching mechanism is built with *supposedly* thread-safe containers from the standard library
+such as `ConcurrentHashMap`. I tried to make sure that I'm using all the atomic operation methods
+such as `compute` and `computeIfAbsent()`. I am currently researching the thread-safety of their
+element traversal and removal. 
 
 If you find an issue with thread-safety, let me know or create a pull request with your fix.
 
