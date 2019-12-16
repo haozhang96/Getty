@@ -345,7 +345,7 @@ public abstract class Getty<T> {
     ) {
         final R value = get(getter, exceptionHandler).rawGet();
         if (null == value) {
-            return exceptionHandler.handleException(null, new NullPointerException());
+            return exceptionHandler.handleException(object, new NullPointerException());
         }
         return value;
     }

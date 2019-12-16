@@ -1,18 +1,18 @@
 # Getty
 A Java getter-call chaining library
 ```java
-int a = 1;
+Map<Integer, Integer> map = Collections.singletonMap(1, 1);
 
-double b = Getty.of(a)
-    .getOrDefault(Integer::doubleValue, -1.0)
-    .get(Math::abs)
-    .getNonNull(d -> null, (d, exception) -> {
-        System.err.format("Exception occurred while calling getter on %s: %s", d, exception);
+String value = Getty.of(map)
+    .getOrDefault(m -> m.get(0), -1) // Default value
+    .getNonNull(i -> null, (i, exception) -> { // Null value handling
+        System.err.format("Exception occurred while calling getter on %d: %s", i, exception);
         return Double.NaN;
     })
+    .get(Double::toHexString)
     .get();
 
-System.out.println(b); // NaN
+System.out.println(value); // NaN
 ```
 
 
