@@ -126,22 +126,60 @@ public abstract class Getty<T> {
         Getter<T, R> getter,
         ExceptionHandlerConsumer<T> exceptionHandler
     ) {
-        return handled(rawGet(getter, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(rawGet(getter, exceptionHandler), root);
     }
 
     public <R> ExceptionHandledGetty<R> get(
         Getter<T, R> getter,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return handled(rawGet(getter, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(rawGet(getter, exceptionHandler), root);
     }
+
+
+    public <R> ExceptionHandledGetty<R> getOrDefault(
+        Getter<T, R> getter,
+        R defaultValue,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValue, exceptionHandler),
+            root
+        );
+    }
+
+    public <R> ExceptionHandledGetty<R> getOrDefault(
+        Getter<T, R> getter,
+        Supplier<R> defaultValueSupplier,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValueSupplier, exceptionHandler),
+            root
+        );
+    }
+
+    public <R> ExceptionHandledGetty<R> getOrDefault(
+        Getter<T, R> getter,
+        Function<T, R> defaultValueFunction,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValueFunction, exceptionHandler),
+            root
+        );
+    }
+
 
     public <R> ExceptionHandledGetty<R> getOrDefault(
         Getter<T, R> getter,
         R defaultValue,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return handled(rawGetOrDefault(getter, defaultValue, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValue, exceptionHandler),
+            root
+        );
     }
 
     public <R> ExceptionHandledGetty<R> getOrDefault(
@@ -149,7 +187,10 @@ public abstract class Getty<T> {
         Supplier<R> defaultValueSupplier,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return handled(rawGetOrDefault(getter, defaultValueSupplier, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValueSupplier, exceptionHandler),
+            root
+        );
     }
 
     public <R> ExceptionHandledGetty<R> getOrDefault(
@@ -157,21 +198,24 @@ public abstract class Getty<T> {
         Function<T, R> defaultValueFunction,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return handled(rawGetOrDefault(getter, defaultValueFunction, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(
+            rawGetOrDefault(getter, defaultValueFunction, exceptionHandler),
+            root
+        );
     }
 
     public <R> ExceptionHandledGetty<R> getNonNull(
         Getter<T, R> getter,
         ExceptionHandlerConsumer<T> exceptionHandler
     ) {
-        return handled(rawGetNonNull(getter, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(rawGetNonNull(getter, exceptionHandler), root);
     }
 
     public <R> ExceptionHandledGetty<R> getNonNull(
         Getter<T, R> getter,
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
-        return handled(rawGetNonNull(getter, exceptionHandler), root);
+        return ExceptionHandledGetty.getInstance(rawGetNonNull(getter, exceptionHandler), root);
     }
 
     //==============================================================================================
@@ -193,7 +237,7 @@ public abstract class Getty<T> {
     }
 
     protected <R> R rawGet(Getter<T, R> getter, ExceptionHandlerConsumer<T> exceptionHandler) {
-        return rawGet(getter, ExceptionHandlerConsumer.toFunction(exceptionHandler));
+        return rawGet(getter, exceptionHandler.toFunction());
     }
 
     protected <R> R rawGet(Getter<T, R> getter, ExceptionHandlerFunction<T, R> exceptionHandler) {
@@ -221,7 +265,7 @@ public abstract class Getty<T> {
         return rawGetOrDefault(
             getter,
             defaultValueSupplier,
-            (object, exception) -> defaultValueSupplier.get()
+            (object, exception) -> { return defaultValueSupplier.get(); }
         );
     }
 
@@ -229,8 +273,32 @@ public abstract class Getty<T> {
         return rawGetOrDefault(
             getter,
             defaultValueFunction,
-            (object, exception) -> defaultValueFunction.apply(object)
+            (object, exception) -> { return defaultValueFunction.apply(object); }
         );
+    }
+
+    protected <R> R rawGetOrDefault(
+        Getter<T, R> getter,
+        R defaultValue,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return rawGetOrDefault(getter, defaultValue, exceptionHandler.toFunction());
+    }
+
+    protected <R> R rawGetOrDefault(
+        Getter<T, R> getter,
+        Supplier<R> defaultValueSupplier,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return rawGetOrDefault(getter, defaultValueSupplier, exceptionHandler.toFunction());
+    }
+
+    protected <R> R rawGetOrDefault(
+        Getter<T, R> getter,
+        Function<T, R> defaultValueFunction,
+        ExceptionHandlerConsumer<T> exceptionHandler
+    ) {
+        return rawGetOrDefault(getter, defaultValueFunction, exceptionHandler.toFunction());
     }
 
     protected <R> R rawGetOrDefault(
@@ -268,7 +336,7 @@ public abstract class Getty<T> {
         Getter<T, R> getter,
         ExceptionHandlerConsumer<T> exceptionHandler
     ) {
-        return rawGetNonNull(getter, ExceptionHandlerConsumer.toFunction(exceptionHandler));
+        return rawGetNonNull(getter, exceptionHandler.toFunction());
     }
 
     protected <R> R rawGetNonNull(
@@ -286,17 +354,11 @@ public abstract class Getty<T> {
     // Other Helper Methods
     //==============================================================================================
 
-    @SuppressWarnings("rawtypes")
-    private void removeChainCache() {
-        Map<Object, Map<Object, Getty<?>>> cache;
-        if (ExceptionUnhandledGetty.class == getClass()) {
-            cache = (Map) ExceptionUnhandledGetty.CACHE;
-        } else {
-            cache = (Map) ExceptionHandledGetty.CACHE;
-        }
+    protected abstract Map<Object, Map<Object, Getty<Object>>> getCache();
 
-        // LOGGER.info("Removing chain cache: getty={}, object={}, root={}", this, object, root);
-        cache.computeIfPresent(root, (__, chainCache) -> {
+    private void removeChainCache() {
+        LOGGER.trace("Removing chain cache: getty={}, object={}, root={}", this, object, root);
+        getCache().computeIfPresent(root, (__, chainCache) -> {
             chainCache.clear();
             return null; // Mark the cache chain container for removal by the garbage collector.
         });
@@ -308,6 +370,9 @@ public abstract class Getty<T> {
 
     /**
      * Begin a Getty chain and return the head.
+     * <br/>
+     *
+     * This is the main entry method for the {@link Getty} library.
      *
      * @param object The object to be held by the head of the Getty chain
      * @param <T>
@@ -315,28 +380,24 @@ public abstract class Getty<T> {
      */
     public static <T> ExceptionUnhandledGetty<T> of(T object) {
         Objects.requireNonNull(object, "The object cannot be null.");
-        return unhandled(object, object);
+        return ExceptionUnhandledGetty.getInstance(object, object);
     }
 
-    protected static <T> ExceptionUnhandledGetty<T> unhandled(T object, Object root) {
-        return (ExceptionUnhandledGetty<T>) getInstance(
-            object,
-            root,
-            ExceptionUnhandledGetty::new,
-            ExceptionUnhandledGetty.CACHE
-        );
-    }
-
-    protected static <T> ExceptionHandledGetty<T> handled(T object, Object root) {
-        return (ExceptionHandledGetty<T>) getInstance(
-            object,
-            root,
-            ExceptionHandledGetty::new,
-            ExceptionHandledGetty.CACHE
-        );
-    }
-
-    private static <T, G extends Getty<?>> G getInstance(
+    /**
+     *
+     * <br/>
+     *
+     * This is for internal use only.
+     *
+     * @param object
+     * @param root
+     * @param constructor
+     * @param cache
+     * @param <T>
+     * @param <G>
+     * @return
+     */
+    protected static <T, G extends Getty<?>> G getInstance(
         T object,
         Object root,
         BiFunction<T, Object, G> constructor,

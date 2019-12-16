@@ -6,19 +6,11 @@ public interface ExceptionHandlerFunction<T, R> {
 
     ExceptionHandlerFunction<?, ?> RETURN_NULL = (object, exception) -> null;
     ExceptionHandlerFunction<?, ?> THROW_NULL_POINTER_EXCEPTION =
-        fromConsumer(ExceptionHandlerConsumer.THROW_NULL_POINTER_EXCEPTION);
+        ExceptionHandlerConsumer.THROW_NULL_POINTER_EXCEPTION.toFunction();
     ExceptionHandlerFunction<?, ?> RETHROW_EXCEPTION =
-        fromConsumer(ExceptionHandlerConsumer.RETHROW_EXCEPTION);
+        ExceptionHandlerConsumer.RETHROW_EXCEPTION.toFunction();
 
-    static <T, R> ExceptionHandlerFunction<T, R> fromConsumer(
-        ExceptionHandlerConsumer<T> exceptionHandler
-    ) {
-        return ExceptionHandlerConsumer.toFunction(exceptionHandler);
-    }
-
-    static <T, R> ExceptionHandlerConsumer<T> toConsumer(
-        ExceptionHandlerFunction<T, R> exceptionHandler
-    ) {
-        return (object, exception) -> exceptionHandler.handleException(object, exception);
+    default ExceptionHandlerConsumer<T> toConsumer() {
+        return this::handleException; // I have no idea why this works. My IDE told me about it.
     }
 }

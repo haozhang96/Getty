@@ -9,18 +9,7 @@ public interface ExceptionHandlerConsumer<T> {
     ExceptionHandlerConsumer<?> RETHROW_EXCEPTION =
         (object, exception) -> { throw new RuntimeException(exception); };
 
-    static <T, R> ExceptionHandlerConsumer<T> fromFunction(
-        ExceptionHandlerFunction<T, R> exceptionHandler
-    ) {
-        return ExceptionHandlerFunction.toConsumer(exceptionHandler);
-    }
-
-    static <T, R> ExceptionHandlerFunction<T, R> toFunction(
-        ExceptionHandlerConsumer<T> exceptionHandler
-    ) {
-        return (object, exception) -> {
-            exceptionHandler.handleException(object, exception);
-            return null;
-        };
+    default <R> ExceptionHandlerFunction<T, R> toFunction() {
+        return (object, exception) -> { this.handleException(object, exception); return null; };
     }
 }
