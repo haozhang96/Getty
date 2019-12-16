@@ -1,5 +1,19 @@
 # Getty
 A Java getter-call chaining library
+```java
+Integer a = null;
+
+double b = Getty.of(a)
+    .getOrDefault(Integer::doubleValue, -1.0)
+    .get(Math::abs)
+    .getNonNull(d -> null, (d, exception) -> {
+        System.err.format("Exception occurred while calling getter on %s: %s", d, exception);
+        return Double.NaN;
+    })
+    .get();
+
+System.out.println(b); // NaN
+```
 
 
 ## Requirements
