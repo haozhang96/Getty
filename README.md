@@ -1,7 +1,7 @@
 # Getty
 A Java getter-call chaining library
 ```java
-Integer a = null;
+int a = 1;
 
 double b = Getty.of(a)
     .getOrDefault(Integer::doubleValue, -1.0)
