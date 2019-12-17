@@ -128,8 +128,8 @@ public class GettyTest {
     @Test
     public void chainCaching() {
         // Check Getty instance caching.
-        final Getty<Map<Integer, Integer>> a = Getty.of(MAP);
-        final Getty<Map<Integer, Integer>> b = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> a = Getty.cached(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.cached(MAP);
         final Getty<Integer> aGet0 = a.get(GET0);
         final Getty<Integer> bGet0 = b.get(GET0);
         assertThat(a, sameInstance(b)); // Should be the same Getty instance
@@ -142,7 +142,7 @@ public class GettyTest {
         assertThat(bValue, equalTo(aValue));
 
         // Make sure the Getty instances are still cached.
-        final Getty<Map<Integer, Integer>> c = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> c = Getty.cached(MAP);
         final Getty<Integer> cGet0 = c.get(GET0);
         assertThat(c, sameInstance(a));
         assertThat(c, sameInstance(b));
@@ -154,7 +154,7 @@ public class GettyTest {
         assertThat(cValue, equalTo(aValue));
 
         // Make sure the Getty instances are no longer cached.
-        final Getty<Map<Integer, Integer>> d = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> d = Getty.cached(MAP);
         final Getty<Integer> dGet0 = d.get(GET0);
         assertThat(d, not(sameInstance(a)));
         assertThat(dGet0, not(sameInstance(aGet0))); // Should be a brand new instance

@@ -18,11 +18,17 @@ import static org.haozhang.getty.ExceptionHandlerFunction.THROW_NULL_POINTER_EXC
  * <br/>
  * TODO:
  *
- * @param <T> The type of the object held by this {@link Getty} instance (potentially on a chain)
+ * @param <T> The type of the object held by this {@link Getty} instance
  */
 @SuppressWarnings("unchecked")
 public abstract class Getty<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Getty.class);
+
+    /**
+     * Whether the {@link Getty} instances should be cached by default when calling
+     *   {@link #of(Object)}
+     */
+    private static final boolean CACHE_BY_DEFAULT = false;
 
     /**
      * Sentinel object used as a workaround for null keys and values in {@link ConcurrentHashMap}
@@ -39,7 +45,7 @@ public abstract class Getty<T> {
     protected final T object;
 
     /**
-     * The root object used to start this {@link Getty} chain (from the {@link #of(Object)} call)
+     * The root object used to start this Getty chain (from the {@link #of(Object)} call)
      */
     protected final Object root;
 
@@ -350,53 +356,26 @@ public abstract class Getty<T> {
     }
 
     //==============================================================================================
-    // Other Helper Methods
+    // Caching Methods
     //==============================================================================================
 
     protected abstract Map<Object, Map<Object, Getty<Object>>> getCache();
 
+    protected boolean isCached() {
+        return getCache().containsKey(root);
+    }
+
     private void removeChainCache() {
-        LOGGER.trace("Removing chain cache: getty={}, object={}, root={}", this, object, root);
-        getCache().computeIfPresent(root, (__, chainCache) -> {
-            chainCache.clear();
-            return null; // Mark the cache chain container for removal by the garbage collector.
-        });
+        if (isCached()) {
+            LOGGER.trace("Removing chain cache: getty={}, object={}, root={}", this, object, root);
+            getCache().computeIfPresent(root, (__, chainCache) -> {
+                chainCache.clear();
+                return null; // Mark the cache chain container for removal by the garbage collector.
+            });
+        }
     }
 
-    //==============================================================================================
-    // Factory Methods
-    //==============================================================================================
-
-    /**
-     * Begin a Getty chain and return the head.
-     * <br/>
-     *
-     * This is the main entry method for the {@link Getty} library.
-     *
-     * @param object The object to be held by the head of the Getty chain
-     * @param <T>
-     * @return
-     */
-    public static <T> ExceptionUnhandledGetty<T> of(T object) {
-        Objects.requireNonNull(object, "The object cannot be null.");
-        return ExceptionUnhandledGetty.getInstance(object, object);
-    }
-
-    /**
-     *
-     * <br/>
-     *
-     * This is for internal use only.
-     *
-     * @param object
-     * @param root
-     * @param constructor
-     * @param cache
-     * @param <T>
-     * @param <G>
-     * @return
-     */
-    protected static <T, G extends Getty<?>> G getInstance(
+    protected static <T, G extends Getty<?>> G getCachedInstance(
         T object,
         Object root,
         BiFunction<T, Object, G> constructor,
@@ -412,5 +391,72 @@ public abstract class Getty<T> {
         return cache
             .computeIfAbsent(root, __ -> new ConcurrentHashMap<>())
             .computeIfAbsent(object, _object -> constructor.apply((T) _object, root));
+    }
+
+    //==============================================================================================
+    // Simple Getter Methods
+    //==============================================================================================
+
+    /**
+     * Call the given supplier and return its value. If the call fails, then return {@code null}.
+     *
+     * @param valueSupplier
+     * @param <T>
+     * @return
+     */
+    public static <T> T get(Supplier<T> valueSupplier) {
+        return getOrDefault(valueSupplier, (T) null);
+    }
+
+    public static <T> T getOrDefault(Supplier<T> valueSupplier, T defaultValue) {
+        try {
+            return valueSupplier.get();
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    public static <T> T getOrDefault(Supplier<T> valueSupplier, Supplier<T> defaultValueSupplier) {
+        try {
+            return valueSupplier.get();
+        } catch (Exception exception) {
+            return defaultValueSupplier.get();
+        }
+    }
+
+    //==============================================================================================
+    // Getty Factory Methods
+    //==============================================================================================
+
+    /**
+     * Begin a Getty chain and return the head {@link Getty} instance.
+     * <br/>
+     *
+     * This is the default main entry method for the {@link Getty} library.
+     * <br/>
+     *
+     * Caching is performed if the {@code CACHE_BY_DEFAULT} field of {@link Getty} is set to
+     *   {@code true}. If you would like to decide whether to cache or not, use
+     *   {@link #uncached(Object)} or {@link #cached(Object)}.
+     *
+     * @param object The object to be held by the head of the Getty chain
+     * @param <T> The type of the object held by this {@link Getty} instance
+     * @return A {@link Getty} instance holding the given object
+     *
+     * @see #uncached(Object)
+     * @see #cached(Object)
+     */
+    public static <T> ExceptionUnhandledGetty<T> of(T object) {
+        return CACHE_BY_DEFAULT ? cached(object) : uncached(object);
+    }
+
+    public static <T> ExceptionUnhandledGetty<T> uncached(T object) {
+        Objects.requireNonNull(object, "The object cannot be null.");
+        return ExceptionUnhandledGetty.getUncachedInstance(object, object);
+    }
+
+    public static <T> ExceptionUnhandledGetty<T> cached(T object) {
+        Objects.requireNonNull(object, "The object cannot be null.");
+        return ExceptionUnhandledGetty.getCachedInstance(object, object);
     }
 }

@@ -50,9 +50,29 @@ public class ExceptionHandledGetty<T> extends Getty<T> {
         return (Map) CACHE;
     }
 
+    /**
+     * Return a cached or uncached instance of {@link ExceptionHandledGetty} based on whether the
+     *   given {@code root} has been cached.
+     *
+     * @param object The object to be held by this {@link ExceptionHandledGetty} instance
+     * @param root The root object used to start this Getty chain
+     * @param <T> The type of the object held by this {@link ExceptionHandledGetty} instance
+     * @return An {@link ExceptionHandledGetty} instance holding the given object
+     */
+    protected static <T> ExceptionHandledGetty<T> getInstance(T object, Object root) {
+        if (CACHE.containsKey(root)) {
+            return getCachedInstance(object, root);
+        }
+        return getUncachedInstance(object, root);
+    }
+
+    protected static <T> ExceptionHandledGetty<T> getUncachedInstance(T object, Object root) {
+        return new ExceptionHandledGetty(object, root);
+    }
+
     @SuppressWarnings("unchecked")
-    protected static <R> ExceptionHandledGetty<R> getInstance(R object, Object root) {
-        return (ExceptionHandledGetty<R>)
-            getInstance(object, root, ExceptionHandledGetty::new, CACHE);
+    protected static <T> ExceptionHandledGetty<T> getCachedInstance(T object, Object root) {
+        return (ExceptionHandledGetty<T>)
+            getCachedInstance(object, root, ExceptionHandledGetty::new, CACHE);
     }
 }
