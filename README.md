@@ -56,7 +56,7 @@ Integer value = null;
 
 try {
     final B b = a.getB();
-    C c = null;
+    C c;
     
     try {
         c = b.getC()
@@ -65,10 +65,8 @@ try {
         c = new C();
     }
     
-    if (c != null) {
-        // Finally, get the value we wanted.
-        value = c.getD().getE();
-    }
+    // Finally, get the value we wanted.
+    value = c.getD().getE();
 } catch (NullPointerException npe) {
     // Ignore.
 }
@@ -80,7 +78,7 @@ Integer value = null;
 
 try {
     final B b = a.getB();
-    C c = null;
+    C c;
     
     try {
         c = b.getC()
@@ -89,17 +87,15 @@ try {
         c = new C();
     }
     
-    if (c != null) {
-        D d = c.getD();
-        
-        if (d == null) {
-            // Use another instance.
-            d = new D();
-        }
-        
-        // Finally, get the value we wanted.
-        value = d.getE();
+    D d = c.getD();
+    
+    if (d == null) {
+        // Use another instance.
+        d = new D();
     }
+    
+    // Finally, get the value we wanted.
+    value = d.getE();
 } catch (NullPointerException npe) {
     // Ignore.
 }
@@ -133,7 +129,7 @@ Integer value = null;
 
 try {
     final B b = a.getB();
-    C c = null;
+    C c;
     
     try {
         c = b.getC()
@@ -142,10 +138,8 @@ try {
         c = new C();
     }
     
-    if (c != null) {
-        // Finally, get the value we wanted.
-        value = c.getD().getE();
-    }
+    // Finally, get the value we wanted.
+    value = c.getD().getE();
 } catch (NullPointerException npe) {
     // Ignore.
 }
@@ -170,7 +164,7 @@ Integer value = null;
 
 try {
     final B b = a.getB();
-    C c = null;
+    C c;
     
     try {
         c = b.getC()
@@ -179,17 +173,15 @@ try {
         c = new C();
     }
     
-    if (c != null) {
-        D d = c.getD();
-        
-        if (d == null) {
-            // Use another instance.
-            d = new D();
-        }
-        
-        // Finally, get the value we wanted.
-        value = d.getE();
+    D d = c.getD();
+    
+    if (d == null) {
+        // Use another instance.
+        d = new D();
     }
+    
+    // Finally, get the value we wanted.
+    value = d.getE();
 } catch (NullPointerException npe) {
     // Ignore.
 }
@@ -215,9 +207,11 @@ perhaps better) ways of solving problems.
 ## Is performance a concern while using this library? 
 Some considerations were taken to potentially optimize this library's use.
 
-Getty instances created on a chain are cached using the value they hold and the root object used to
-start the chain. Subsequent Getty instances are first queried from the cache before they are
-instantiated.
+#### Chain caching
+Getty instances created on a chain can be cached using the value they hold and the root object used
+to start the chain. Subsequent Getty instances are first queried from the cache before they are
+instantiated. This only occurs if the you call the `Getty.cached()` method, or the `Getty.of()`
+method if the `CACHE_BY_DEFAULT` field in the `Getty` class is set to `true`.
 
 Getty instances on a given chain are removed from the cache upon calling the appropriate terminal
 getter method. Calling `get()` on a Getty instance will perform cache removal, but calling
@@ -250,6 +244,18 @@ Integer b2Value = b
 
 To see a more in-depth demonstration of the caching mechanism, take a look at the `chainCaching`
 test case in [GettyTest.java](src/test/java/org/haozhang/getty/GettyTest.java).
+
+#### Optimization attempts
+Some performance optimizations have taken place over time.
+
+##### Before optimization attempts
+![Before optimization attempts](https://imgur.com/ddD4K8a.png)
+
+##### After the first caching mechanism rewrite
+![After the first caching mechanism rewrite](https://imgur.com/gMC6T2j.png)
+
+##### After minimizing calls to `ConcurrentHashMap` methods
+![After minimizing calls to `ConcurrentHashMap` methods](https://imgur.com/WSVGVxe.png)
 
 ## Is this library guaranteed to be thread-safe?
 **Short answer: No.**

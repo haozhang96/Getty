@@ -84,11 +84,6 @@ public abstract class Getty<T> {
         this.cached = cached;
     }
 
-    @FunctionalInterface
-    public interface Constructor<T, G extends Getty<?>> {
-        G newInstance(T object, Object root, boolean cached);
-    }
-
     //==============================================================================================
     // Terminal Chaining Methods
     //==============================================================================================
@@ -401,7 +396,7 @@ public abstract class Getty<T> {
     protected static <T, G extends Getty<T>> G getCachedInstance(
         T object,
         Object root,
-        Constructor<T, G> constructor
+        GettyConstructor<T, G> constructor
     ) {
         // Use the special null sentinel value for the ConcurrentHashMaps.
         if (null == object) {
