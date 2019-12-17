@@ -32,13 +32,13 @@ Of course, its use isn't limited to this use case, but it was created with this 
 
 
 ## Why?
-Consider the following getter call-chain to extract some data from a long chain of Java objects:
+Consider the following getter call-chain to extract some data from a long chain of Java objects.
 ```java
 Integer value = a.getB().getC().getD().getE();
 ```
 
 You would now like to handle any `NullPointerException` that might occur during the call. You could
-simply wrap the whole thing in a try-catch block:
+simply wrap the whole thing in a try-catch block.
 ```java
 Integer value = null;
 
@@ -210,8 +210,8 @@ Some considerations were taken to potentially optimize this library's use.
 #### Chain caching
 Getty instances created on a chain can be cached using the value they hold and the root object used
 to start the chain. Subsequent Getty instances are first queried from the cache before they are
-instantiated. This only occurs if the you call the `Getty.cached()` method, or the `Getty.of()`
-method if the `CACHE_BY_DEFAULT` field in the `Getty` class is set to `true`.
+instantiated. This only occurs if you call the `Getty.cached()` method, or the `Getty.of()` method
+if the `CACHE_BY_DEFAULT` field in the `Getty` class is set to `true`.
 
 Getty instances on a given chain are removed from the cache upon calling the appropriate terminal
 getter method. Calling `get()` on a Getty instance will perform cache removal, but calling
@@ -219,7 +219,7 @@ getter method. Calling `get()` on a Getty instance will perform cache removal, b
 
 You should prefer using `get()` for one-time chains:
 ```java
-Integer value = Getty.of(a)
+Integer value = Getty.cached(a)
     .get(a -> a.getB().getC().getD().getE())
     .get();
 ```
@@ -227,7 +227,7 @@ Integer value = Getty.of(a)
 If you want to reuse a Getty chain multiple times, consider using `getAndCache()` but remember to
 call `get()` for the last use to remove the cache:
 ```java
-Getty<A> a = Getty.of(a); // The root Getty chain which will be used multiple times
+Getty<A> a = Getty.cached(a); // The root Getty chain which will be used multiple times
 
 Getty<B> b1 = a.get(a -> a.getB());
 Integer b1Value = b
@@ -246,9 +246,10 @@ To see a more in-depth demonstration of the caching mechanism, take a look at th
 test case in [GettyTest.java](src/test/java/org/haozhang/getty/GettyTest.java).
 
 #### Optimization attempts
-Some performance optimizations have taken place over time.
+Some performance optimizations have taken place over time. I will continue to look for ways to
+improve things across the board, but I believe the library is very usable in its current state.
 
-##### Before optimization attempts
+##### Before optimization attempts (note that this was done while running on battery)
 ![Before optimization attempts](https://imgur.com/ddD4K8a.png)
 
 ##### After the first caching mechanism rewrite
@@ -256,6 +257,9 @@ Some performance optimizations have taken place over time.
 
 ##### After minimizing calls to `ConcurrentHashMap` methods
 ![After minimizing calls to `ConcurrentHashMap` methods](https://imgur.com/WSVGVxe.png)
+
+You can find these benchmarks (which might become outdated later on) in
+[GettyBenchmark.java](src/test/java/org/haozhang/getty/GettyBenchmark.java).
 
 ## Is this library guaranteed to be thread-safe?
 **Short answer: No.**
@@ -267,8 +271,8 @@ use, I cannot guarantee the thread-safety of this library's operations.
 
 The caching mechanism is built with *supposedly* thread-safe containers from the standard library
 such as `ConcurrentHashMap`. I tried to make sure that I'm using all the atomic operation methods
-such as `compute` and `computeIfAbsent()`. I am currently researching the thread-safety of their
-element traversal and removal. 
+such as `computeIfPresent` and `computeIfAbsent()`. I am currently researching the thread-safety of
+their element traversal and removal. 
 
 If you find an issue with thread-safety, let me know or create a pull request with your fix.
 
