@@ -6,56 +6,56 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.Collections;
-import java.util.Map;
-
-@Fork(2)
+@Fork(1)
 @Warmup(iterations = 3, time = 5)
-@Measurement(iterations = 5, time = 5)
-public class GettyBenchmark {
-    private static final Map<Integer, Integer> MAP = Collections.singletonMap(1, 1);
-    private static final Getter<Map<Integer, Integer>, Double> GETTER = m -> m.get(1).doubleValue();
-
-    // @State(Scope.Benchmark)
-    public static class GettyState {
-
-    }
-
+@Measurement(iterations = 10, time = 5)
+public class GettyBenchmark extends GettyTestSupport {
     @Benchmark
-    public void plainGetter() {
+    public void plainGetter_goodIndex() {
         try {
-            MAP.get(1).doubleValue();
-        } catch (NullPointerException exception) {
-
-        }
+            plainGetter_goodIndex.get().doubleValue();
+        } catch (NullPointerException exception) { }
     }
 
     @Benchmark
-    public void gettyCached_anonymousLambda() {
-        Getty.cached(MAP)
-            .get(m -> m.get(1).doubleValue())
-            .getAndCache();
+    public void plainGetter_badIndex() {
+        try {
+            plainGetter_badIndex.get().doubleValue();
+        } catch (NullPointerException exception) { }
     }
 
     @Benchmark
-    public void gettyCached_referencedLambda() {
-        Getty.cached(MAP)
-            .get(GETTER)
-            .getAndCache();
+    public void lambdaHelper_goodGetter() {
+        try {
+            lambdaHelper_goodGetter.get();
+        } catch (NullPointerException exception) { }
     }
 
     @Benchmark
-    public void gettyUncached_anonymousLambda() {
-        Getty.uncached(MAP)
-            .get(m -> m.get(1).doubleValue())
-            .get();
+    public void lambdaHelper_badGetter() {
+        try {
+            lambdaHelper_badGetter.get();
+        } catch (NullPointerException exception) { }
     }
 
     @Benchmark
-    public void gettyUncached_referencedLambda() {
-        Getty.uncached(MAP)
-            .get(GETTER)
-            .get();
+    public void gettyCached_goodGetter() {
+        gettyCached_goodGetter.get();
+    }
+
+    @Benchmark
+    public void gettyCached_badGetter() {
+        gettyCached_badGetter.get();
+    }
+
+    @Benchmark
+    public void gettyUncached_goodGetter() {
+        gettyUncached_goodGetter.get();
+    }
+
+    @Benchmark
+    public void gettyUncached_badGetter() {
+        gettyUncached_badGetter.get();
     }
 
     public static void main(String... args) throws Exception {
