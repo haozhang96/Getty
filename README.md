@@ -249,16 +249,9 @@ test case in [GettyTest.java](src/test/java/org/haozhang/getty/GettyTest.java).
 Some performance optimizations have taken place over time. I will continue to look for ways to
 improve things across the board, but I believe the library is very usable in its current state.
 
-##### Before optimization attempts (note that this was done while running on battery)
-![Before optimization attempts](https://imgur.com/ddD4K8a.png)
+![After changing benchmarks to prevent unwanted JIT optimizations](https://imgur.com/fiRxZG4.png)
 
-##### After the first caching mechanism rewrite
-![After the first caching mechanism rewrite](https://imgur.com/gMC6T2j.png)
-
-##### After minimizing calls to `ConcurrentHashMap` methods
-![After minimizing calls to `ConcurrentHashMap` methods](https://imgur.com/WSVGVxe.png)
-
-You can find these benchmarks (which might become outdated later on) in
+You can find these benchmarks (which might get changed with time) in
 [GettyBenchmark.java](src/test/java/org/haozhang/getty/GettyBenchmark.java).
 
 ## Is this library guaranteed to be thread-safe?
@@ -271,13 +264,71 @@ use, I cannot guarantee the thread-safety of this library's operations.
 
 The caching mechanism is built with *supposedly* thread-safe containers from the standard library
 such as `ConcurrentHashMap`. I tried to make sure that I'm using all the atomic operation methods
-such as `computeIfPresent` and `computeIfAbsent()`. I am currently researching the thread-safety of
+such as `computeIfAbsent()`. I am currently researching the thread-safety of
 their element traversal and removal. 
 
 If you find an issue with thread-safety, let me know or create a pull request with your fix.
 
 
 ## How do I use it?
-**TODO:** Add examples
+
+#### Simple getter - No Getty instance creation
+```java
+Getty.get(() -> bean.badMethod()); // null
+```
+
+#### Simple getter with default value - No Getty instance creation
+```java
+Getty.getOrDefault(() -> map.get(null), 123); // 123
+```
+
+#### Simple getter with default value supplier - No Getty instance creation
+```java
+Getty.getOrDefault(() -> map.get(null), (Supplier<?>) () -> "Alternate value"); // Alternate value
+```
+
+#### Exception-ignoring
+```java
+Getty.of(bean)
+    .get(b -> b.badMethod())
+    .get(); // null
+```
+
+#### Default value
+```java
+Getty.of(map)
+    .getOrDefault(m -> m.get(null), 123)
+    .get(); // 123
+```
+
+#### Default value *and* exception handling
+```java
+Getty.of(map)
+    .getOrDefault(m -> m.badMethod(), 123, (m, e) -> {
+        System.err.format("Exception occurred while calling getter on %s: %s", m, e);
+        return "Alternate value";
+    })
+    .get(); // Alternate value
+```
+
+#### Ensuring non-null value
+```java
+Getty.of(map)
+    .getNonNull(m -> m.get(null)) // NullPointerException
+    .get();
+```
+
+#### Null-value handling
+```java
+Getty.of(map)
+    .getNonNull(m -> m.get(null), (m, e) -> {
+        if (e instanceof NullPointerException) {
+            System.err.println("Null value while calling getter on " + m);
+            return "Alternate value";
+        }
+        return 123;
+    })
+    .get(); // Alternate value
+```
 
 You can also refer to the [**Why**](#why) section above for more examples.

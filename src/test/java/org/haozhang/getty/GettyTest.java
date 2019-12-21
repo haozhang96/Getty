@@ -4,125 +4,119 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class GettyTest {
+public class GettyTest extends GettyTestSupport {
     private static final Logger LOGGER = LoggerFactory.getLogger(GettyTest.class);
 
-    // The map used for testing getter-chaining calls
-    private static final Map<Integer, Integer> MAP = new HashMap<>();
-    static {
-        MAP.put(0, 0);
-        MAP.put(1, 1);
+    @Test(expected = NullPointerException.class)
+    public void of_whenHeadIsNull_thenThrowNullPointerException() {
+        Getty.getOrDefault(() -> (Integer) null, (Supplier<?>) () -> "Alternate value"); // Alternate value
+        Getty.of(null);
     }
-
-    // Helpful map-getter lambda methods
-    private static final Getter<Map<Integer, Integer>, Integer> GET0 = map -> map.get(0);
-    private static final Getter<Map<Integer, Integer>, Integer> GET1 = map -> map.get(1);
-    private static final Getter<Map<Integer, Integer>, Integer> GETNULL = map -> map.get(Integer.MAX_VALUE);
-
-    // Commonly-used values
-    private static final Integer DEFAULT = 123;
 
     @Test
     public void unhandledGetty_case1() {
         final Double value = Getty.of(MAP)
-            .get(GET0)
+            .get(GOOD_GETTER)
             .get(Integer::doubleValue)
             .get();
-        LOGGER.info("Value: {}", value);
-        assertThat(value, equalTo(0d));
+
+        assertThat(value, equalTo((double) VALUE));
     }
 
     @Test
     public void unhandledGetty_case2() {
         final Double value = Getty.of(MAP)
-            .get(GETNULL)
+            .get(NULL_GETTER)
             .get(Integer::doubleValue)
             .get();
-        LOGGER.info("Value: {}", value);
+
         assertThat(value, nullValue());
     }
 
     @Test
     public void unhandledGetty_case3() {
         final Object value = Getty.of(MAP)
-            .get(GET0)
-            .get(i -> { throw new RuntimeException("Oops: " + i.toString()); })
+            .get(GOOD_GETTER)
+            .get((Getter<Integer, Double>) BAD_GETTER)
             .get();
-        LOGGER.info("Value: {}", value);
+
         assertThat(value, nullValue());
     }
 
     @Test
     public void handledGetty_case1() {
         final Double value = Getty.of(MAP)
-            .get(GET1, (i, e) -> -1)
+            .get(GOOD_GETTER, (i, e) -> -VALUE)
             .get(Integer::doubleValue)
             .get();
-        LOGGER.info("Value: {}", value);
-        assertThat(value, equalTo(1d));
+
+        assertThat(value, equalTo((double) VALUE));
     }
 
     @Test
     public void handledGetty_case2() {
         final Object value = Getty.of(MAP)
-            .get(GET1)
-            .get(i -> { throw new RuntimeException(i.toString()); }, (i, e) -> {
+            .get(GOOD_GETTER)
+            .get((Getter<Integer, String>) BAD_GETTER, (i, e) -> {
                 LOGGER.error("Getter failed on: " + i, e);
-                return "-1";
+                return String.valueOf(-VALUE);
             })
             .get();
-        LOGGER.info("Value: {}", value);
-        assertThat(value, equalTo("-1"));
+
+        assertThat(value, equalTo(String.valueOf(-VALUE)));
     }
 
     @Test
     public void handledGetty_case3() {
         final Object value = Getty.of(MAP)
-            .get(GET1, (i, e) -> -1)
-            .get(Integer::doubleValue, (i, e) -> "yikes")
+            .get(GOOD_GETTER, (i, e) -> -VALUE)
+            .get(Integer::doubleValue, (i, e) -> "string!")
             .get();
-        LOGGER.info("Value: {}", value);
-        assertThat(value, equalTo(1d));
+
+        assertThat(value, equalTo((double) VALUE));
     }
 
     @Test
     public void getOrDefault_whenGetterReturnsNull_thenReturnDefaultValue() {
         final Integer value = Getty.of(MAP)
-            .getOrDefault(GETNULL, DEFAULT)
+            .getOrDefault(NULL_GETTER, DEFAULT_VALUE)
             .get();
-        assertThat(value, equalTo(DEFAULT));
+
+        assertThat(value, equalTo(DEFAULT_VALUE));
     }
 
     @Test
     public void getOrDefault_whenGetterReturnsValue_thenReturnGetterValue() {
         final Integer value = Getty.of(MAP)
-            .getOrDefault(GET0, DEFAULT)
+            .getOrDefault(GOOD_GETTER, DEFAULT_VALUE)
             .get();
-        assertThat(value, equalTo(0));
+
+        assertThat(value, equalTo(VALUE));
     }
 
     @Test(expected = NullPointerException.class)
     public void getNonNull_givenNoExceptionHandler_whenGetterReturnsNull_thenThrowNullPointerException() {
         Getty.of(MAP)
-            .getNonNull(GETNULL)
+            .getNonNull(NULL_GETTER)
             .get();
     }
 
     @Test
     public void getNonNull_givenExceptionHandler_whenGetterReturnsNull_thenReturnHandledValue() {
         final Integer value = Getty.of(MAP)
-            .getNonNull(GETNULL, (i, e) -> {
+            .getNonNull(NULL_GETTER, (i, e) -> {
                 LOGGER.error("Getter failed on: " + i, e);
-                return DEFAULT;
+                return VALUE;
             })
             .get();
-        assertThat(value, equalTo(DEFAULT));
+
+        assertThat(value, equalTo(VALUE));
     }
 
     @Test
@@ -130,34 +124,45 @@ public class GettyTest {
         // Check Getty instance caching.
         final Getty<Map<Integer, Integer>> a = Getty.cached(MAP);
         final Getty<Map<Integer, Integer>> b = Getty.cached(MAP);
-        final Getty<Integer> aGet0 = a.get(GET0);
-        final Getty<Integer> bGet0 = b.get(GET0);
+        final Getty<Integer> aGetValue = a.get(GOOD_GETTER);
+        final Getty<Integer> bGetValue = b.get(GOOD_GETTER);
+        final Getty<Integer> aGetNull = a.get(NULL_GETTER);
+        final Getty<Integer> bGetNull = b.get(NULL_GETTER);
         assertThat(a, sameInstance(b)); // Should be the same Getty instance
-        assertThat(bGet0, sameInstance(aGet0)); // So should the Getty instances on their getter chains
-        assertThat(bGet0, not(sameInstance(a.get(GET1)))); // But obviously not for different getter output values
+        assertThat(bGetValue, sameInstance(aGetValue)); // So should the Getty instances on their getter chains
+        assertThat(bGetValue, not(sameInstance(a.get(i -> null)))); // But obviously not for different getter output values
+        assertThat(bGetNull, sameInstance(aGetNull)); // Same for null values on the chain
 
         // Call the terminal getter but keep the Getty chain cached.
-        final Integer aValue = aGet0.getAndCache();
-        final Integer bValue = bGet0.getAndCache();
+        final Integer aValue = aGetValue.getAndCache();
+        final Integer bValue = bGetValue.getAndCache();
+        final Integer aNull = aGetNull.getAndCache();
+        final Integer bNull = bGetNull.getAndCache();
         assertThat(bValue, equalTo(aValue));
+        assertThat(aNull, nullValue());
+        assertThat(bNull, nullValue());
 
         // Make sure the Getty instances are still cached.
         final Getty<Map<Integer, Integer>> c = Getty.cached(MAP);
-        final Getty<Integer> cGet0 = c.get(GET0);
+        final Getty<Integer> cGetValue = c.get(GOOD_GETTER);
+        final Getty<Integer> cGetNull = c.get(NULL_GETTER);
         assertThat(c, sameInstance(a));
         assertThat(c, sameInstance(b));
-        assertThat(cGet0, sameInstance(aGet0));
-        assertThat(cGet0, sameInstance(bGet0));
+        assertThat(cGetValue, sameInstance(aGetValue));
+        assertThat(cGetValue, sameInstance(bGetValue));
+        assertThat(cGetNull, sameInstance(aGetNull));
+        assertThat(cGetNull, sameInstance(bGetNull));
 
         // Call the terminal getter but remove the Getty chain cache. This is the usual case for one-time chains.
-        final Integer cValue = cGet0.get();
+        final Integer cValue = cGetValue.get();
+        final Integer cNull = cGetNull.get();
         assertThat(cValue, equalTo(aValue));
+        assertThat(cNull, nullValue());
 
         // Make sure the Getty instances are no longer cached.
         final Getty<Map<Integer, Integer>> d = Getty.cached(MAP);
-        final Getty<Integer> dGet0 = d.get(GET0);
+        final Getty<Integer> dGetValue = d.get(GOOD_GETTER);
         assertThat(d, not(sameInstance(a)));
-        assertThat(dGet0, not(sameInstance(aGet0))); // Should be a brand new instance
-//        assertThat(dGet0, sameInstance(a.get(GET0))); // But if we call a.get() again, it should return the same instance since d.get() was cached
+        assertThat(dGetValue, not(sameInstance(aGetValue))); // Should be a brand new instance
     }
 }

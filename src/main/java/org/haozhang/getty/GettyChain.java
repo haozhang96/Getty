@@ -9,7 +9,6 @@ public class GettyChain extends ConcurrentHashMap<Object, Getty<?>> {
     private final Object head;
 
     public GettyChain(Object head) {
-        super();
         this.head = head;
     }
 

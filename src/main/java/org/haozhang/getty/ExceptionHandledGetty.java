@@ -10,12 +10,12 @@ public class ExceptionHandledGetty<T> extends Getty<T> {
 
     @Override
     public <R> ExceptionHandledGetty<R> get(Getter<T, R> getter) {
-        return chainHandled(rawGet(getter));
+        return handled(rawGet(getter));
     }
 
     @Override
     public <R> ExceptionHandledGetty<R> getOrDefault(Getter<T, R> getter, R defaultValue) {
-        return chainHandled(rawGetOrDefault(getter, defaultValue));
+        return handled(rawGetOrDefault(getter, defaultValue));
     }
 
     @Override
@@ -23,7 +23,7 @@ public class ExceptionHandledGetty<T> extends Getty<T> {
         Getter<T, R> getter,
         Supplier<R> defaultValueSupplier
     ) {
-        return chainHandled(rawGetOrDefault(getter, defaultValueSupplier));
+        return handled(rawGetOrDefault(getter, defaultValueSupplier));
     }
 
     @Override
@@ -31,21 +31,23 @@ public class ExceptionHandledGetty<T> extends Getty<T> {
         Getter<T, R> getter,
         Function<T, R> defaultValueFunction
     ) {
-        return chainHandled(rawGetOrDefault(getter, defaultValueFunction));
+        return handled(rawGetOrDefault(getter, defaultValueFunction));
     }
 
     @Override
     public <R> ExceptionHandledGetty<R> getNonNull(Getter<T, R> getter) {
-        return chainHandled(rawGetNonNull(getter));
+        return handled(rawGetNonNull(getter));
     }
 
     /**
-     * Return a cached or uncached instance of {@link ExceptionHandledGetty} based on the given
-     *   {@code cached} argument.
+     * Return an {@link ExceptionHandledGetty} instance holding the given object.
      * <br/>
      *
-     * Note that this is strictly for internal use and will not function properly if the cache has
-     *   not already been set up for the {@code root} and {@code object} pair.
+     * A cached {@link ExceptionHandledGetty} instance will be returned if {@code chain} is given.
+     *   Otherwise, an uncached {@link ExceptionHandledGetty} instance will be returned.
+     * <br/>
+     *
+     * Note that this is strictly for internal use.
      *
      * @param object The object to be held by this {@link ExceptionHandledGetty} instance
      * @param chain The {@link GettyChain} that this {@link ExceptionHandledGetty} instance is a
