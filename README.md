@@ -196,6 +196,70 @@ Integer value = Getty.of(a)
 ```
 
 
+## How do I use it?
+
+#### Simple getter
+```java
+Getty.get(() -> bean.badMethod()); // null
+```
+
+#### Simple getter with default value
+```java
+Getty.getOrDefault(() -> map.get(null), 123); // 123
+```
+
+#### Simple getter with default value supplier
+```java
+Getty.getOrDefault(() -> map.get(null), (Supplier<?>) () -> "Alternate value"); // Alternate value
+```
+
+#### Exception ignoring
+```java
+Getty.of(bean)
+    .get(b -> b.badMethod())
+    .get(); // null
+```
+
+#### Default value
+```java
+Getty.of(map)
+    .getOrDefault(m -> m.get(null), 123)
+    .get(); // 123
+```
+
+#### Default value with exception handling
+```java
+Getty.of(map)
+    .getOrDefault(m -> m.badMethod(), 123, (m, e) -> {
+        System.err.format("Exception occurred while calling getter on %s: %s", m, e);
+        return "Alternate value";
+    })
+    .get(); // Alternate value
+```
+
+#### Ensuring non-null value
+```java
+Getty.of(map)
+    .getNonNull(m -> m.get(null)) // NullPointerException
+    .get();
+```
+
+#### Null-value handling
+```java
+Getty.of(map)
+    .getNonNull(m -> m.get(null), (m, e) -> {
+        if (e instanceof NullPointerException) {
+            System.err.println("Null value while calling getter on " + m);
+            return "Alternate value";
+        }
+        return 123;
+    })
+    .get(); // Alternate value
+```
+
+You can also refer to the [**Why**](#why) section above for more examples.
+
+
 ## Isn't there already a solution to this problem?
 If there is an existing library that solves this problem, then I am unaware of it. I just took the
 idea given to me by a colleague and ran with it in my free time.
@@ -251,6 +315,12 @@ improve things across the board, but I believe the library is very usable in its
 
 ![After changing benchmarks to prevent unwanted JIT optimizations](https://imgur.com/fiRxZG4.png)
 
+The reason why caching has a larger performance hit is because there is some bookkeeping to keep
+track of Getty "chains". There are calls to `ConcurrentHashMap`s to query and maintain the cache,
+which take up a large chunk of the processing time. This is a necessary trade-off between
+performance and memory usage, so make sure to test both cached and uncached Getty chains to see
+which one would work best for your situation.
+
 You can find these benchmarks (which might get changed with time) in
 [GettyBenchmark.java](src/test/java/org/haozhang/getty/GettyBenchmark.java).
 
@@ -268,67 +338,3 @@ such as `computeIfAbsent()`. I am currently researching the thread-safety of
 their element traversal and removal. 
 
 If you find an issue with thread-safety, let me know or create a pull request with your fix.
-
-
-## How do I use it?
-
-#### Simple getter - No Getty instance creation
-```java
-Getty.get(() -> bean.badMethod()); // null
-```
-
-#### Simple getter with default value - No Getty instance creation
-```java
-Getty.getOrDefault(() -> map.get(null), 123); // 123
-```
-
-#### Simple getter with default value supplier - No Getty instance creation
-```java
-Getty.getOrDefault(() -> map.get(null), (Supplier<?>) () -> "Alternate value"); // Alternate value
-```
-
-#### Exception-ignoring
-```java
-Getty.of(bean)
-    .get(b -> b.badMethod())
-    .get(); // null
-```
-
-#### Default value
-```java
-Getty.of(map)
-    .getOrDefault(m -> m.get(null), 123)
-    .get(); // 123
-```
-
-#### Default value *and* exception handling
-```java
-Getty.of(map)
-    .getOrDefault(m -> m.badMethod(), 123, (m, e) -> {
-        System.err.format("Exception occurred while calling getter on %s: %s", m, e);
-        return "Alternate value";
-    })
-    .get(); // Alternate value
-```
-
-#### Ensuring non-null value
-```java
-Getty.of(map)
-    .getNonNull(m -> m.get(null)) // NullPointerException
-    .get();
-```
-
-#### Null-value handling
-```java
-Getty.of(map)
-    .getNonNull(m -> m.get(null), (m, e) -> {
-        if (e instanceof NullPointerException) {
-            System.err.println("Null value while calling getter on " + m);
-            return "Alternate value";
-        }
-        return 123;
-    })
-    .get(); // Alternate value
-```
-
-You can also refer to the [**Why**](#why) section above for more examples.
