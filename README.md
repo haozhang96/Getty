@@ -1,5 +1,5 @@
 # Getty
-A Java getter-call chaining library
+A Java getter-chaining library
 ```java
 Map<Integer, Integer> map = Collections.singletonMap(1, 1);
 
