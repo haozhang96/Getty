@@ -13,62 +13,62 @@ import org.openjdk.jmh.infra.Blackhole;
 public class GettyBenchmark extends GettyTestSupport {
     @Benchmark
     public long plainGetter_goodIndex(State state, Blackhole blackhole) {
-        return run(plainGetter_goodKey, state, blackhole);
+        return benchmark(plainGetter_goodKey, state, blackhole);
     }
 
     @Benchmark
     public long plainGetter_nullIndex(State state, Blackhole blackhole) {
-        return run(plainGetter_nullKey, state, blackhole);
+        return benchmark(plainGetter_nullKey, state, blackhole);
     }
 
     @Benchmark
     public long plainGetter_badIndex(State state, Blackhole blackhole) {
-        return run(plainGetter_badKey, state, blackhole);
+        return benchmark(plainGetter_badKey, state, blackhole);
     }
 
     @Benchmark
     public long lambdaHelper_goodGetter(State state, Blackhole blackhole) {
-        return run(lambdaHelper_goodGetter, state, blackhole);
+        return benchmark(lambdaHelper_goodGetter, state, blackhole);
     }
 
     @Benchmark
     public long lambdaHelper_nullGetter(State state, Blackhole blackhole) {
-        return run(lambdaHelper_nullGetter, state, blackhole);
+        return benchmark(lambdaHelper_nullGetter, state, blackhole);
     }
 
     @Benchmark
     public long lambdaHelper_badGetter(State state, Blackhole blackhole) {
-        return run(lambdaHelper_badGetter, state, blackhole);
+        return benchmark(lambdaHelper_badGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyCached_goodGetter(State state, Blackhole blackhole) {
-        return run(gettyCached_goodGetter, state, blackhole);
+        return benchmark(gettyCached_goodGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyCached_nullGetter(State state, Blackhole blackhole) {
-        return run(gettyCached_nullGetter, state, blackhole);
+        return benchmark(gettyCached_nullGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyCached_badGetter(State state, Blackhole blackhole) {
-        return run(gettyCached_badGetter, state, blackhole);
+        return benchmark(gettyCached_badGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyUncached_goodGetter(State state, Blackhole blackhole) {
-        return run(gettyUncached_goodGetter, state, blackhole);
+        return benchmark(gettyUncached_goodGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyUncached_nullGetter(State state, Blackhole blackhole) {
-        return run(gettyUncached_nullGetter, state, blackhole);
+        return benchmark(gettyUncached_nullGetter, state, blackhole);
     }
 
     @Benchmark
     public long gettyUncached_badGetter(State state, Blackhole blackhole) {
-        return run(gettyUncached_badGetter, state, blackhole);
+        return benchmark(gettyUncached_badGetter, state, blackhole);
     }
 
     public static void main(String... args) throws Exception {

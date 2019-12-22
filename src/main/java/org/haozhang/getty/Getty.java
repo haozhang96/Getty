@@ -403,7 +403,8 @@ public abstract class Getty<T> {
 
     /**
      * Call the given supplier and return its value. If the supplier returns {@code null} or the
-     *   call fails, then return {@code defaultValue}.
+     *   call fails, then call the default value supplier and return its value. If the call fails,
+     *   then return {@code null}.
      *
      * @param valueSupplier The supplier to call to retrieve the value
      * @param defaultValueSupplier The secondary value supplier to call to retrieve the value if the

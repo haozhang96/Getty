@@ -44,10 +44,10 @@ public abstract class GettyTestSupport {
         public final long time = System.currentTimeMillis();
     }
 
-    // Run a method while avoiding JIT optimizations
-    protected static final long run(Supplier<?> method, State state, Blackhole blackhole) {
+    // Benchmark a method while avoiding JIT optimizations
+    protected static final long benchmark(Supplier<?> test, State state, Blackhole blackhole) {
         try {
-            blackhole.consume(method.get());
+            blackhole.consume(test.get());
         } catch (Exception exception) {
             // Ignore.
         } finally {

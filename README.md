@@ -117,6 +117,13 @@ try {
     // Ignore.
 }
 ```
+
+**Simple Getty usage for short chains without creating a Getty instance:**
+```java
+Integer value = Getty.get(() -> a.getB().getC().getD().getE());
+```
+
+**Conventional Getty usage with more complex functionality:**
 ```java
 Integer value = Getty.of(a)
     .get(a -> a.getB().getC().getD().getE()) // Getty handles null values on the chain by default.
