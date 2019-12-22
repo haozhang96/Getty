@@ -13,12 +13,6 @@ import static org.hamcrest.Matchers.*;
 public class GettyTest extends GettyTestSupport {
     private static final Logger LOGGER = LoggerFactory.getLogger(GettyTest.class);
 
-    @Test(expected = NullPointerException.class)
-    public void of_whenHeadIsNull_thenThrowNullPointerException() {
-        Getty.getOrDefault(() -> (Integer) null, (Supplier<?>) () -> "Alternate value"); // Alternate value
-        Getty.of(null);
-    }
-
     @Test
     public void unhandledGetty_case1() {
         final Double value = Getty.of(MAP)
@@ -26,7 +20,7 @@ public class GettyTest extends GettyTestSupport {
             .get(Integer::doubleValue)
             .get();
 
-        assertThat(value, equalTo((double) VALUE));
+        assertThat(value, equalTo((double) GOOD_VALUE));
     }
 
     @Test
@@ -52,11 +46,11 @@ public class GettyTest extends GettyTestSupport {
     @Test
     public void handledGetty_case1() {
         final Double value = Getty.of(MAP)
-            .get(GOOD_GETTER, (i, e) -> -VALUE)
+            .get(GOOD_GETTER, (i, e) -> -GOOD_VALUE)
             .get(Integer::doubleValue)
             .get();
 
-        assertThat(value, equalTo((double) VALUE));
+        assertThat(value, equalTo((double) GOOD_VALUE));
     }
 
     @Test
@@ -65,21 +59,21 @@ public class GettyTest extends GettyTestSupport {
             .get(GOOD_GETTER)
             .get((Getter<Integer, String>) BAD_GETTER, (i, e) -> {
                 LOGGER.error("Getter failed on: " + i, e);
-                return String.valueOf(-VALUE);
+                return String.valueOf(-GOOD_VALUE);
             })
             .get();
 
-        assertThat(value, equalTo(String.valueOf(-VALUE)));
+        assertThat(value, equalTo(String.valueOf(-GOOD_VALUE)));
     }
 
     @Test
     public void handledGetty_case3() {
         final Object value = Getty.of(MAP)
-            .get(GOOD_GETTER, (i, e) -> -VALUE)
+            .get(GOOD_GETTER, (i, e) -> -GOOD_VALUE)
             .get(Integer::doubleValue, (i, e) -> "string!")
             .get();
 
-        assertThat(value, equalTo((double) VALUE));
+        assertThat(value, equalTo((double) GOOD_VALUE));
     }
 
     @Test
@@ -97,7 +91,7 @@ public class GettyTest extends GettyTestSupport {
             .getOrDefault(GOOD_GETTER, DEFAULT_VALUE)
             .get();
 
-        assertThat(value, equalTo(VALUE));
+        assertThat(value, equalTo(GOOD_VALUE));
     }
 
     @Test(expected = NullPointerException.class)
@@ -112,12 +106,16 @@ public class GettyTest extends GettyTestSupport {
         final Integer value = Getty.of(MAP)
             .getNonNull(NULL_GETTER, (i, e) -> {
                 LOGGER.error("Getter failed on: " + i, e);
-                return VALUE;
+                return GOOD_VALUE;
             })
             .get();
 
-        assertThat(value, equalTo(VALUE));
+        assertThat(value, equalTo(GOOD_VALUE));
     }
+
+    //==============================================================================================
+    // Caching Helper Methods
+    //==============================================================================================
 
     @Test
     public void chainCaching() {
@@ -164,5 +162,114 @@ public class GettyTest extends GettyTestSupport {
         final Getty<Integer> dGetValue = d.get(GOOD_GETTER);
         assertThat(d, not(sameInstance(a)));
         assertThat(dGetValue, not(sameInstance(aGetValue))); // Should be a brand new instance
+    }
+
+    //==============================================================================================
+    // Simple Getter Methods
+    //==============================================================================================
+
+    @Test(expected = NullPointerException.class)
+    public void get_whenValueSupplierIsNull_thenThrowNullPointerException() {
+        Getty.get((Supplier<?>) null);
+    }
+
+    @Test
+    public void get_whenValueSupplierThrowsException_thenReturnNull() {
+        assertThat(Getty.get(BAD_SUPPLIER), nullValue());
+    }
+
+    @Test
+    public void get_whenValueSupplierReturnsNull_thenReturnNull() {
+        assertThat(Getty.get(NULL_SUPPLIER), nullValue());
+    }
+
+    @Test
+    public void get_whenValueSupplierReturnsValue_thenReturnValue() {
+        assertThat(Getty.get(GOOD_SUPPLIER), equalTo(GOOD_VALUE));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void getOrDefault_whenValueSupplierIsNull_thenThrowNullPointerException() {
+        Getty.getOrDefault((Supplier<Integer>) null, NULL_VALUE);
+    }
+
+    @Test
+    public void getOrDefault_whenValueSupplierThrowsException_thenReturnDefaultValue() {
+        assertThat(
+            Getty.getOrDefault((Supplier<Integer>) BAD_SUPPLIER, DEFAULT_VALUE),
+            equalTo(DEFAULT_VALUE)
+        );
+    }
+
+    @Test
+    public void getOrDefault_whenValueSupplierReturnsNull_thenReturnDefaultValue() {
+        assertThat(
+            Getty.getOrDefault((Supplier<Integer>) NULL_SUPPLIER, DEFAULT_VALUE),
+            equalTo(DEFAULT_VALUE)
+        );
+    }
+
+    @Test
+    public void getOrDefault_whenValueSupplierReturnsValue_thenReturnValue() {
+        assertThat(
+            Getty.getOrDefault((Supplier<Integer>) GOOD_SUPPLIER, DEFAULT_VALUE),
+            equalTo(GOOD_VALUE)
+        );
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void getOrDefault_givenNullValueSupplier_whenDefaultValueSupplierIsNull_thenThrowNullPointerException() {
+        Getty.getOrDefault((Supplier<Integer>) NULL_SUPPLIER, (Supplier<Integer>) null);
+    }
+
+    @Test
+    public void getOrDefault_givenNullValueSupplier_whenDefaultValueSupplierThrowsException_thenReturnNull() {
+        assertThat(
+            Getty.getOrDefault((Supplier<Integer>) NULL_SUPPLIER, (Supplier<Integer>) BAD_SUPPLIER),
+            nullValue()
+        );
+    }
+
+    @Test
+    public void getOrDefault_whenValueSupplierReturnsNull_thenReturnDefaultValueSupplierValue() {
+        assertThat(
+            Getty.getOrDefault((Supplier<Integer>) NULL_SUPPLIER, (Supplier<Integer>) GOOD_SUPPLIER),
+            equalTo(GOOD_VALUE)
+        );
+    }
+
+    //==============================================================================================
+    // Factory Methods
+    //==============================================================================================
+
+    @Test(expected = NullPointerException.class)
+    public void of_whenHeadIsNull_thenThrowNullPointerException() {
+        Getty.of(null);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void uncached_whenHeadIsNull_thenThrowNullPointerException() {
+        Getty.uncached(null);
+    }
+
+    @Test
+    public void uncached_whenHeadIsNotNull_thenReturnUncachedGettyInstance() {
+        final Getty<Map<Integer, Integer>> getty = Getty.uncached(MAP);
+
+        assertThat(getty, notNullValue());
+        assertThat(Getty.CACHE.keySet(), not(contains(MAP)));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void cached_whenHeadIsNull_thenThrowNullPointerException() {
+        Getty.cached(null);
+    }
+
+    @Test
+    public void cached_whenHeadIsNotNull_thenReturnCachedGettyInstance() {
+        final Getty<Map<Integer, Integer>> getty = Getty.cached(MAP);
+
+        assertThat(getty, notNullValue());
+        assertThat(Getty.CACHE.keySet(), contains(MAP));
     }
 }

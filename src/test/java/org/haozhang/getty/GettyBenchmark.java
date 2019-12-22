@@ -9,21 +9,31 @@ import org.openjdk.jmh.infra.Blackhole;
 
 @Fork(1)
 @Warmup(iterations = 3, time = 5)
-@Measurement(iterations = 10, time = 5)
+@Measurement(iterations = 5, time = 5)
 public class GettyBenchmark extends GettyTestSupport {
     @Benchmark
     public long plainGetter_goodIndex(State state, Blackhole blackhole) {
-        return run(plainGetter_goodIndex, state, blackhole);
+        return run(plainGetter_goodKey, state, blackhole);
+    }
+
+    @Benchmark
+    public long plainGetter_nullIndex(State state, Blackhole blackhole) {
+        return run(plainGetter_nullKey, state, blackhole);
     }
 
     @Benchmark
     public long plainGetter_badIndex(State state, Blackhole blackhole) {
-        return run(plainGetter_badIndex, state, blackhole);
+        return run(plainGetter_badKey, state, blackhole);
     }
 
     @Benchmark
     public long lambdaHelper_goodGetter(State state, Blackhole blackhole) {
         return run(lambdaHelper_goodGetter, state, blackhole);
+    }
+
+    @Benchmark
+    public long lambdaHelper_nullGetter(State state, Blackhole blackhole) {
+        return run(lambdaHelper_nullGetter, state, blackhole);
     }
 
     @Benchmark
@@ -37,6 +47,11 @@ public class GettyBenchmark extends GettyTestSupport {
     }
 
     @Benchmark
+    public long gettyCached_nullGetter(State state, Blackhole blackhole) {
+        return run(gettyCached_nullGetter, state, blackhole);
+    }
+
+    @Benchmark
     public long gettyCached_badGetter(State state, Blackhole blackhole) {
         return run(gettyCached_badGetter, state, blackhole);
     }
@@ -44,6 +59,11 @@ public class GettyBenchmark extends GettyTestSupport {
     @Benchmark
     public long gettyUncached_goodGetter(State state, Blackhole blackhole) {
         return run(gettyUncached_goodGetter, state, blackhole);
+    }
+
+    @Benchmark
+    public long gettyUncached_nullGetter(State state, Blackhole blackhole) {
+        return run(gettyUncached_nullGetter, state, blackhole);
     }
 
     @Benchmark

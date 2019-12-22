@@ -412,12 +412,23 @@ public abstract class Getty<T> {
      * @return The value
      */
     public static <T> T getOrDefault(Supplier<T> valueSupplier, Supplier<T> defaultValueSupplier) {
+        Objects.requireNonNull(valueSupplier, "The value supplier cannot be null.");
+        Objects.requireNonNull(defaultValueSupplier, "The default value supplier cannot be null.");
+
         try {
             final T value = valueSupplier.get();
-            return null != value ? value : defaultValueSupplier.get();
+            if (null != value) {
+                return value;
+            }
         } catch (Exception exception) {
-            LOGGER.error("Getter call failed; calling default value supplier", exception);
+            LOGGER.error("Value supplier call failed; calling default value supplier", exception);
+        }
+
+        try {
             return defaultValueSupplier.get();
+        } catch (Exception exception) {
+            LOGGER.error("Default value supplier call failed", exception);
+            return null;
         }
     }
 
@@ -429,7 +440,7 @@ public abstract class Getty<T> {
      * Begin a Getty chain and return the head {@link Getty} instance.
      * <br/>
      *
-     * This is the default main entry method for the {@link Getty} library.
+     * This is the default entry method for the {@link Getty} library.
      * <br/>
      *
      * Caching is performed if the {@code CACHE_BY_DEFAULT} field of {@link Getty} is set to
