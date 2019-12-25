@@ -8,7 +8,7 @@ import java.util.function.Function;
  * <br/><br/>
  *
  * It is intended to be used as a marker for accepting lambda methods in the form
- *   {@code o -> o.get()}. The Java compiler will match these lambda methods to the correct
+ *   {@code o -> o.method()}. The Java compiler will match these lambda methods to the correct
  *   interface method ({@link #apply(Object)}).
  * <br/><br/>
  *
@@ -16,7 +16,7 @@ import java.util.function.Function;
  * <pre>{@code
  *   Getty.of(map).get(m -> m.get(1)).get(Integer::doubleValue).get();
  * }</pre>
- * {@code m -> m.get(1)} becomes {@code Getter<Map, Integer>} and {@code Integer::doubleValue}
+ * {@code m -> m.get(1)} becomes a {@code Getter<Map, Integer>} and {@code Integer::doubleValue}
  *   becomes a {@code Getter<Integer, Double>} with the help of the Java compiler.
  *
  * @param <T> The type of object the getter method will be called with; see {@link Getty#object}

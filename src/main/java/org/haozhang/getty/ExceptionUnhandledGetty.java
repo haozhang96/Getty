@@ -4,20 +4,32 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ExceptionUnhandledGetty<T> extends Getty<T> {
+    /**
+     * @see Getty#Getty(Object, GettyChain)
+     */
     protected ExceptionUnhandledGetty(T object, GettyChain chain) {
         super(object, chain);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> ExceptionUnhandledGetty<R> get(Getter<T, R> getter) {
         return unhandled(rawGet(getter));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> ExceptionUnhandledGetty<R> getOrDefault(Getter<T, R> getter, R defaultValue) {
         return unhandled(rawGetOrDefault(getter, defaultValue));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> ExceptionUnhandledGetty<R> getOrDefault(
         Getter<T, R> getter,
@@ -26,6 +38,9 @@ public class ExceptionUnhandledGetty<T> extends Getty<T> {
         return unhandled(rawGetOrDefault(getter, defaultValueSupplier));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> ExceptionUnhandledGetty<R> getOrDefault(
         Getter<T, R> getter,
@@ -34,6 +49,9 @@ public class ExceptionUnhandledGetty<T> extends Getty<T> {
         return unhandled(rawGetOrDefault(getter, defaultValueFunction));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> ExceptionUnhandledGetty<R> getNonNull(Getter<T, R> getter) {
         return unhandled(rawGetNonNull(getter));
@@ -41,11 +59,11 @@ public class ExceptionUnhandledGetty<T> extends Getty<T> {
 
     /**
      * Return an {@link ExceptionUnhandledGetty} instance holding the given object.
-     * <br/>
+     * <br/><br/>
      *
      * A cached {@link ExceptionUnhandledGetty} instance will be returned if {@code chain} is given.
      *   Otherwise, an uncached {@link ExceptionUnhandledGetty} instance will be returned.
-     * <br/>
+     * <br/><br/>
      *
      * Note that this is strictly for internal use.
      *
@@ -60,7 +78,7 @@ public class ExceptionUnhandledGetty<T> extends Getty<T> {
     }
 
     protected static <T> ExceptionUnhandledGetty<T> getUncachedInstance(T object) {
-        return new ExceptionUnhandledGetty(object, null);
+        return new ExceptionUnhandledGetty<T>(object, null);
     }
 
     protected static <T> ExceptionUnhandledGetty<T> getCachedInstance(T object, GettyChain chain) {

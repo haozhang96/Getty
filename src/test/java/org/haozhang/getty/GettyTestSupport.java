@@ -61,7 +61,7 @@ public abstract class GettyTestSupport {
     }
 
     /**
-     * Benchmarks to be fed to run()
+     * Benchmarks to be fed to benchmark()
      */
 
     // Plain getters

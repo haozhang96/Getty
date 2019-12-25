@@ -10,6 +10,6 @@ public interface ExceptionHandlerConsumer<T> {
         (object, exception) -> { throw new RuntimeException(exception); };
 
     default <R> ExceptionHandlerFunction<T, R> toFunction() {
-        return (object, exception) -> { this.handleException(object, exception); return null; };
+        return (object, exception) -> { handleException(object, exception); return null; };
     }
 }
