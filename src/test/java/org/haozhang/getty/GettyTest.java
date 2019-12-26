@@ -257,7 +257,7 @@ public class GettyTest extends GettyTestSupport {
         final Getty<Map<Integer, Integer>> getty = Getty.uncached(MAP);
 
         assertThat(getty, notNullValue());
-        assertThat(Getty.CACHE.keySet(), not(contains(MAP)));
+        assertThat(CACHE.keySet(), not(contains(MAP)));
     }
 
     @Test(expected = NullPointerException.class)
@@ -270,6 +270,6 @@ public class GettyTest extends GettyTestSupport {
         final Getty<Map<Integer, Integer>> getty = Getty.cached(MAP);
 
         assertThat(getty, notNullValue());
-        assertThat(Getty.CACHE.keySet(), contains(MAP));
+        assertThat(CACHE.keySet(), contains(MAP));
     }
 }

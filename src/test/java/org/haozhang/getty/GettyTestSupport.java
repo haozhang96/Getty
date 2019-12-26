@@ -4,11 +4,20 @@ import org.junit.Before;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public abstract class GettyTestSupport {
+    // Keep a reference to the same cache as the one in Getty using reflection.
+    protected static Map<Object, GettyChain> CACHE = null;
+    static { try {
+        final Field cacheField = Getty.class.getDeclaredField("CACHE");
+        cacheField.setAccessible(true);
+        CACHE = (Map<Object, GettyChain>) cacheField.get(null);
+    } catch (Exception exception) { } }
+
     // Keys for the map below
     protected static final int GOOD_KEY = 1;
     protected static final int NULL_KEY = -1;
@@ -45,9 +54,9 @@ public abstract class GettyTestSupport {
     }
 
     // Benchmark a method while avoiding JIT optimizations
-    protected static final long benchmark(Supplier<?> test, State state, Blackhole blackhole) {
+    protected static final long benchmark(Supplier<?> benchmark, State state, Blackhole blackhole) {
         try {
-            blackhole.consume(test.get());
+            blackhole.consume(benchmark.get());
         } catch (Exception exception) {
             // Ignore.
         } finally {
@@ -55,9 +64,10 @@ public abstract class GettyTestSupport {
         }
     }
 
+    // Clear the cache before every benchmark.
     @Before
     public void setup() {
-        Getty.CACHE.clear();
+        CACHE.clear();
     }
 
     /**

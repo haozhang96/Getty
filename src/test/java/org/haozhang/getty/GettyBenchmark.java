@@ -12,17 +12,17 @@ import org.openjdk.jmh.infra.Blackhole;
 @Measurement(iterations = 5, time = 5)
 public class GettyBenchmark extends GettyTestSupport {
     @Benchmark
-    public long plainGetter_goodIndex(State state, Blackhole blackhole) {
+    public long plainGetter_goodKey(State state, Blackhole blackhole) {
         return benchmark(plainGetter_goodKey, state, blackhole);
     }
 
     @Benchmark
-    public long plainGetter_nullIndex(State state, Blackhole blackhole) {
+    public long plainGetter_nullKey(State state, Blackhole blackhole) {
         return benchmark(plainGetter_nullKey, state, blackhole);
     }
 
     @Benchmark
-    public long plainGetter_badIndex(State state, Blackhole blackhole) {
+    public long plainGetter_badKey(State state, Blackhole blackhole) {
         return benchmark(plainGetter_badKey, state, blackhole);
     }
 

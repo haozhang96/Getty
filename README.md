@@ -320,7 +320,7 @@ test case in [GettyTest.java](src/test/java/org/haozhang/getty/GettyTest.java).
 Some performance optimizations have taken place over time. I will continue to look for ways to
 improve things across the board, but I believe the library is very usable in its current state.
 
-![After changing benchmarks to prevent unwanted JIT optimizations](https://imgur.com/fiRxZG4.png)
+![Performance benchmarks](https://i.imgur.com/TLLAtIv.png)
 
 The reason why caching has a larger performance hit is because there is some bookkeeping to keep
 track of Getty "chains". There are calls to `ConcurrentHashMap`s to query and maintain the cache,
