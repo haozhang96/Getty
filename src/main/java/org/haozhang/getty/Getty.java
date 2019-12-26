@@ -176,14 +176,15 @@ public class Getty<T> {
     }
 
     /**
-     * TODO:
-     * This returns the default value when the getter returns null or an exception was thrown in the
-     *   getter.
+     * Return a {@link Getty} instance holding the object returned by a given getter. If the getter
+     *   throws an exception or returns {@code null}, then return {@code defaultValue}.
      *
-     * @param getter
-     * @param defaultValue
-     * @param <R>
-     * @return
+     * @param getter The getter to call with the object held by this {@link Getty} instance
+     * @param defaultValue The default value to return if the call to {@code valueSupplier} fails or
+     *   returns {@code null}
+     * @param <R> The return type of {@code getter}
+     * @return A {@link Getty} instance holding the object returned by {@code getter} or
+     *   {@code defaultValue}
      */
     public <R> Getty<R> getOrDefault(Getter<T, R> getter, R defaultValue) {
         return getOrDefault(getter, defaultValue, (object, exception) -> defaultValue);
@@ -361,7 +362,8 @@ public class Getty<T> {
      *   call fails, then return {@code defaultValue}.
      *
      * @param valueSupplier The supplier to call to retrieve the value
-     * @param defaultValue The default value to return if the call to {@code valueSupplier} fails
+     * @param defaultValue The default value to return if the call to {@code valueSupplier} fails or
+     *   returns {@code null}
      * @param <T> The type of the value returned by {@code valueSupplier}
      * @return The value
      */
@@ -376,7 +378,7 @@ public class Getty<T> {
      *
      * @param valueSupplier The supplier to call to retrieve the value
      * @param defaultValueSupplier The secondary value supplier to call to retrieve the value if the
-     *   call to {@code valueSupplier} fails
+     *   call to {@code valueSupplier} fails or returns {@code null}
      * @param <T> The type of the value returned by {@code valueSupplier}
      * @return The value
      */
