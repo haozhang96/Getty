@@ -72,11 +72,6 @@ public class Getty<T> {
      */
     private static final Object NULL_SENTINEL = new Object();
 
-    /**
-     * A commonly used {@link Supplier} that returns {@code null}
-     */
-    private static final Supplier<?> NULL_SUPPLIER = () -> null;
-
     //==============================================================================================
     // Instance-related
     //==============================================================================================
@@ -351,7 +346,7 @@ public class Getty<T> {
      * @return The value
      */
     public static <T> T get(Supplier<T> valueSupplier) {
-        return getOrDefault(valueSupplier, (Supplier<T>) NULL_SUPPLIER);
+        return getOrDefault(valueSupplier, (Supplier<T>) () -> null);
     }
 
     /**

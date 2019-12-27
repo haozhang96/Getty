@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A Getty chain contains {@link Getty} instances which all point to the same {@code head} that was
  *   used to start the chain.
  */
-public class GettyChain extends ConcurrentHashMap<Object, Getty<?>> {
+class GettyChain extends ConcurrentHashMap<Object, Getty<?>> {
     /**
      * The head object used to start this Getty chain (from the {@link Getty#of(Object)} call)
      */
