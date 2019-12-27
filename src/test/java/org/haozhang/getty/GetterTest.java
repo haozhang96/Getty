@@ -2,13 +2,12 @@ package org.haozhang.getty;
 
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class GetterTest {
+public class GetterTest extends GettyTestSupport {
     @Test
     public void typeEquivalence() {
         final Getter<Integer, Double> a = i -> i.doubleValue(); // Lambda method
@@ -20,22 +19,19 @@ public class GetterTest {
 
     @Test
     public void calling() {
-        final Map<Integer, Integer> map = Collections.singletonMap(1, 1);
-        final Getter<Map<Integer, Integer>, Integer> get1 = m -> m.get(1);
+        final Getter<Map<Integer, Integer>, Integer> getter = map -> map.get(GOOD_KEY);
 
-        assertThat(get1.apply(map), equalTo(1));
+        assertThat(getter.apply(MAP), equalTo(GOOD_VALUE));
     }
 
     @Test
     public void gettyIntegration() {
-        final Map<Integer, Integer> map = Collections.singletonMap(1, 1);
-        final Getter<Map<Integer, Integer>, Integer> get1 = m -> m.get(1);
-        final Getter<Integer, Double> intToDouble = Integer::doubleValue;
-
-        final Double value = Getty.of(map)
-            .get(get1)
-            .get(intToDouble)
+        final Getter<Map<Integer, Integer>, Integer> getter = map -> map.get(GOOD_KEY);
+        final double value = Getty.of(MAP)
+            .get(getter)
+            .get(Integer::doubleValue)
             .get();
-        assertThat(value, equalTo(1d));
+
+        assertThat(value, equalTo((double) GOOD_VALUE));
     }
 }

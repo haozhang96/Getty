@@ -14,7 +14,7 @@ public class GettyChain extends ConcurrentHashMap<Object, Getty<?>> {
     /**
      * The head object used to start this Getty chain (from the {@link Getty#of(Object)} call)
      */
-    public transient final Object head;
+    public final transient Object head;
 
     public GettyChain(Object head) {
         this.head = head;

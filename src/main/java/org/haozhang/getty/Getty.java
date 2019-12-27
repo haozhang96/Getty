@@ -9,9 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.haozhang.getty.ExceptionHandlerFunction.RETURN_NULL;
-import static org.haozhang.getty.ExceptionHandlerFunction.THROW_NULL_POINTER_EXCEPTION;
-
 /**
  * This class is the main entry-point of the Getty library, which provides a mechanism to chain long
  *   getter calls while adding exception- and null-handling capabilities.
@@ -160,7 +157,7 @@ public class Getty<T> {
      * @return A {@link Getty} instance holding the object returned by {@code getter}
      */
     public <R> Getty<R> get(Getter<T, R> getter) {
-        return get(getter, (ExceptionHandlerFunction<T, R>) RETURN_NULL);
+        return get(getter, ExceptionHandlerFunction.returnNull());
     }
 
     public <R> Getty<R> get(Getter<T, R> getter, ExceptionHandlerConsumer<T> exceptionHandler) {
@@ -194,7 +191,7 @@ public class Getty<T> {
         return getOrDefault(
             getter,
             defaultValueSupplier,
-            (object, exception) -> { return defaultValueSupplier.get(); }
+            ExceptionHandlerFunction.fromSupplier(defaultValueSupplier)
         );
     }
 
@@ -202,7 +199,7 @@ public class Getty<T> {
         return getOrDefault(
             getter,
             defaultValueFunction,
-            (object, exception) -> { return defaultValueFunction.apply(object); }
+            ExceptionHandlerFunction.fromFunction(defaultValueFunction)
         );
     }
 
@@ -258,7 +255,7 @@ public class Getty<T> {
     }
 
     public <R> Getty<R> getNonNull(Getter<T, R> getter) {
-        return getNonNull(getter, (ExceptionHandlerFunction<T, R>) THROW_NULL_POINTER_EXCEPTION);
+        return getNonNull(getter, ExceptionHandlerFunction.throwNullPointerException());
     }
 
     public <R> Getty<R> getNonNull(

@@ -101,7 +101,7 @@ try {
 }
 ```
 
-Now imagine doing this for even more deeply-nested objects. What a nightmare!
+Now imagine doing this for even more deeply nested objects. What a nightmare!
 
 This is where Getty could come in handy.
 
@@ -334,7 +334,7 @@ You can find these benchmarks (which might get changed with time) in
 ## Is this library guaranteed to be thread-safe?
 **Short answer: No.**
 
-You should take great care with using this in highly-concurrent and time-critical environments.
+You should take great care with using this in highly concurrent and time-critical environments.
 
 Although I have taken some preliminary actions to lessen the potential problems of multi-threaded
 use, I cannot guarantee the thread-safety of this library's operations.

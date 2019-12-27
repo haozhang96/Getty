@@ -19,8 +19,8 @@ import java.util.function.Function;
  * {@code m -> m.get(1)} becomes a {@code Getter<Map, Integer>} and {@code Integer::doubleValue}
  *   becomes a {@code Getter<Integer, Double>} with the help of the Java compiler.
  *
- * @param <T> The type of object the getter method will be called with; see {@link Getty#object}
- * @param <R> The return type of the getter method
+ * @param <T> The type of the object the getter method will be called with
+ * @param <R> The type of the object returned by the getter method
  */
 @FunctionalInterface
 public interface Getter<T, R> extends Function<T, R> {
