@@ -11,12 +11,10 @@ import java.util.function.Supplier;
 
 public abstract class GettyTestSupport {
     // Keep a reference to the same cache as the one in Getty using reflection.
-    protected static Map<Object, GettyChain> CACHE = null;
-    static { try {
-        final Field cacheField = Getty.class.getDeclaredField("CACHE");
-        cacheField.setAccessible(true);
-        CACHE = (Map<Object, GettyChain>) cacheField.get(null);
-    } catch (Exception exception) { } }
+    protected static final Map<Object, GettyChain> CACHE = getGettyFieldValue("CACHE");
+
+    // The name of the system property used to determine whether Getty.of() should cache instances
+    protected static final String CACHE_DETERMINER = getGettyFieldValue("CACHE_DETERMINER");
 
     // Keys for the map below
     protected static final int GOOD_KEY = 1;
@@ -53,7 +51,7 @@ public abstract class GettyTestSupport {
         public final long time = System.currentTimeMillis();
     }
 
-    // Benchmark a method while avoiding JIT optimizations
+    // Benchmark a method while avoiding JIT optimizations.
     protected static final long benchmark(Supplier<?> benchmark, State state, Blackhole blackhole) {
         try {
             blackhole.consume(benchmark.get());
@@ -61,6 +59,17 @@ public abstract class GettyTestSupport {
             // Ignore.
         } finally {
             return state.time;
+        }
+    }
+
+    // Return the value of a field in the Getty class with a given name using reflection.
+    private static <T> T getGettyFieldValue(String name) {
+        try {
+            final Field field = Getty.class.getDeclaredField(name);
+            field.setAccessible(true);
+            return (T) field.get(null);
+        } catch (Exception exception) {
+            return null;
         }
     }
 

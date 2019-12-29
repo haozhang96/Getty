@@ -247,6 +247,24 @@ public class GettyTest extends GettyTestSupport {
         Getty.of(null);
     }
 
+    @Test
+    public void of_whenCachingIsDisabled_thenReturnUncachedGettyInstance() {
+        System.setProperty(CACHE_DETERMINER, "false");
+        final Getty<Map<Integer, Integer>> getty = Getty.uncached(MAP);
+
+        assertThat(getty, notNullValue());
+        assertThat(CACHE.keySet(), not(contains(MAP)));
+    }
+
+    @Test
+    public void of_whenCachingIsEnabled_thenReturnCachedGettyInstance() {
+        System.setProperty(CACHE_DETERMINER, "true");
+        final Getty<Map<Integer, Integer>> getty = Getty.cached(MAP);
+
+        assertThat(getty, notNullValue());
+        assertThat(CACHE.keySet(), contains(MAP));
+    }
+
     @Test(expected = NullPointerException.class)
     public void uncached_whenHeadIsNull_thenThrowNullPointerException() {
         Getty.uncached(null);

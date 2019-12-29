@@ -57,10 +57,10 @@ public class Getty<T> {
     private static final Map<Object, GettyChain> CACHE = new ConcurrentHashMap<>();
 
     /**
-     * Whether the {@link Getty} instances should be cached by default when calling
-     *   {@link #of(Object)}
+     * The name of the system property determining whether {@link Getty} instances should be cached
+     *   when calling {@link #of(Object)}
      */
-    private static final boolean CACHE_BY_DEFAULT = false;
+    private static final String CACHE_DETERMINER = Getty.class.getPackage().getName() + ".cache";
 
     /**
      * A message indicating the incorrect use of {@code null} as the head of a Getty chain
@@ -145,7 +145,7 @@ public class Getty<T> {
     //==============================================================================================
 
     /**
-     * Return a {@link Getty} instance holding the object returned by a given getter.
+     * Return a {@link Getty} instance holding the object returned by a given {@link Getter}.
      *
      * @param getter The getter to call with the object held by this {@link Getty} instance
      * @param <R> The return type of {@code getter}
@@ -168,8 +168,8 @@ public class Getty<T> {
     }
 
     /**
-     * Return a {@link Getty} instance holding the object returned by a given getter. If the getter
-     *   throws an exception or returns {@code null}, then return {@code defaultValue}.
+     * Return a {@link Getty} instance holding the object returned by a given {@link Getter}. If the
+     *   getter throws an exception or returns {@code null}, then return {@code defaultValue}.
      *
      * @param getter The getter to call with the object held by this {@link Getty} instance
      * @param defaultValue The default value to return if the call to {@code valueSupplier} fails or
@@ -406,9 +406,9 @@ public class Getty<T> {
      * This is the default entry method for the {@link Getty} library.
      * <br/><br/>
      *
-     * Caching is performed if the {@code CACHE_BY_DEFAULT} field of {@link Getty} is set to
-     *   {@code true}. If you would like to decide whether to cache or not, use
-     *   {@link #uncached(Object)} or {@link #cached(Object)}.
+     * Caching is performed if the system property with the name set by the {@code CACHE_DETERMINER}
+     *   field of {@link Getty} is set to {@code true}. If you would like to decide whether to cache
+     *   or not, use {@link #uncached(Object)} or {@link #cached(Object)}.
      *
      * @param head The object to be held by the head {@link Getty} instance of this Getty chain
      * @param <T> The type of the object held by this {@link Getty} instance
@@ -418,7 +418,7 @@ public class Getty<T> {
      * @see #cached(Object)
      */
     public static <T> Getty<T> of(T head) {
-        return CACHE_BY_DEFAULT ? cached(head) : uncached(head);
+        return Boolean.getBoolean(CACHE_DETERMINER) ? cached(head) : uncached(head);
     }
 
     /**

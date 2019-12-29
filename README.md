@@ -282,23 +282,23 @@ Some considerations were taken to potentially optimize this library's use.
 Getty instances created on a chain can be cached using the value they hold and the root object used
 to start the chain. Subsequent Getty instances are first queried from the cache before they are
 instantiated. This only occurs if you call the `Getty.cached()` method, or the `Getty.of()` method
-if the `CACHE_BY_DEFAULT` field in the `Getty` class is set to `true`.
+if the system property `org.haozhang.getty.cache` is set to `true`.
 
 Getty instances on a given chain are removed from the cache upon calling the appropriate terminal
 getter method. Calling `get()` on a Getty instance will perform cache removal, but calling
 `getAndCache()` will keep them cached.
 
-You should prefer using `get()` for one-time chains:
+You should prefer using `Getty.uncached()` along with `get()` for one-time chains:
 ```java
-Integer value = Getty.cached(a)
+Integer value = Getty.uncached(a)
     .get(a -> a.getB().getC().getD().getE())
     .get();
 ```
 
-If you want to reuse a Getty chain multiple times, consider using `getAndCache()` but remember to
-call `get()` for the last use to remove the cache:
+If you would like to reuse a Getty chain multiple times, consider using `Getty.cached()` along with
+`getAndCache()` but remember to call `get()` for the last use to remove the cache:
 ```java
-Getty<A> a = Getty.cached(a); // The root Getty chain which will be used multiple times
+Getty<A> a = Getty.cached(a); // The Getty chain head instance which will be used multiple times
 
 Getty<B> b1 = a.get(a -> a.getB());
 Integer b1Value = b
