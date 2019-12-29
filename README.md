@@ -336,12 +336,16 @@ You can find these benchmarks (which might get changed with time) in
 
 You should take great care with using this in highly concurrent and time-critical environments.
 
-Although I have taken some preliminary actions to lessen the potential problems of multi-threaded
+Although I have taken some preliminary actions to alleviate the potential problems of multi-threaded
 use, I cannot guarantee the thread-safety of this library's operations.
 
 The caching mechanism is built with *supposedly* thread-safe containers from the standard library
 such as `ConcurrentHashMap`. I tried to make sure that I'm using all the atomic operation methods
 such as `computeIfAbsent()`. I am currently researching the thread-safety of
-their element traversal and removal. 
+their element traversal and removal.
+
+If you are worried about thread-safety, use uncached Getty instances and avoid sharing them either
+directly or through dependency injection frameworks (e.g. don't use injection annotations such as
+`@Inject` or `@Autowired`).
 
 If you find an issue with thread-safety, let me know or create a pull request with your fix.

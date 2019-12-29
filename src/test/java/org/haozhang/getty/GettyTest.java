@@ -114,7 +114,7 @@ public class GettyTest extends GettyTestSupport {
     }
 
     //==============================================================================================
-    // Caching Helper Methods
+    // Caching
     //==============================================================================================
 
     @Test
@@ -249,20 +249,25 @@ public class GettyTest extends GettyTestSupport {
 
     @Test
     public void of_whenCachingIsDisabled_thenReturnUncachedGettyInstance() {
-        System.setProperty(CACHE_DETERMINER, "false");
-        final Getty<Map<Integer, Integer>> getty = Getty.uncached(MAP);
+        System.setProperty(CACHE_DETERMINER, Boolean.FALSE.toString());
 
-        assertThat(getty, notNullValue());
-        assertThat(CACHE.keySet(), not(contains(MAP)));
+        final Getty<Map<Integer, Integer>> a = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.of(MAP);
+
+        assertThat(CACHE.keySet(), empty());
+        assertThat(a, not(sameInstance(b)));
     }
 
     @Test
     public void of_whenCachingIsEnabled_thenReturnCachedGettyInstance() {
-        System.setProperty(CACHE_DETERMINER, "true");
-        final Getty<Map<Integer, Integer>> getty = Getty.cached(MAP);
+        System.setProperty(CACHE_DETERMINER, Boolean.TRUE.toString());
 
-        assertThat(getty, notNullValue());
+        final Getty<Map<Integer, Integer>> a = Getty.of(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.of(MAP);
+
+        assertThat(CACHE.keySet(), hasSize(1));
         assertThat(CACHE.keySet(), contains(MAP));
+        assertThat(a, sameInstance(b));
     }
 
     @Test(expected = NullPointerException.class)
@@ -272,10 +277,11 @@ public class GettyTest extends GettyTestSupport {
 
     @Test
     public void uncached_whenHeadIsNotNull_thenReturnUncachedGettyInstance() {
-        final Getty<Map<Integer, Integer>> getty = Getty.uncached(MAP);
+        final Getty<Map<Integer, Integer>> a = Getty.uncached(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.uncached(MAP);
 
-        assertThat(getty, notNullValue());
-        assertThat(CACHE.keySet(), not(contains(MAP)));
+        assertThat(CACHE.keySet(), empty());
+        assertThat(a, not(sameInstance(b)));
     }
 
     @Test(expected = NullPointerException.class)
@@ -285,9 +291,11 @@ public class GettyTest extends GettyTestSupport {
 
     @Test
     public void cached_whenHeadIsNotNull_thenReturnCachedGettyInstance() {
-        final Getty<Map<Integer, Integer>> getty = Getty.cached(MAP);
+        final Getty<Map<Integer, Integer>> a = Getty.cached(MAP);
+        final Getty<Map<Integer, Integer>> b = Getty.cached(MAP);
 
-        assertThat(getty, notNullValue());
+        assertThat(CACHE.keySet(), hasSize(1));
         assertThat(CACHE.keySet(), contains(MAP));
+        assertThat(a, sameInstance(b));
     }
 }
