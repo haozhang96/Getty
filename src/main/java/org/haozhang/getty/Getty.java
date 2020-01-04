@@ -265,7 +265,7 @@ public class Getty<T> {
         ExceptionHandlerFunction<T, R> exceptionHandler
     ) {
         final R value = get(getter, exceptionHandler).object;
-        if (null == value) {
+        if (value == null) {
             return chain(exceptionHandler.handleException(object, new NullPointerException()));
         }
         return chain(value);
@@ -329,7 +329,7 @@ public class Getty<T> {
      */
     private static <T> Getty<T> getCachedInstance(T object, GettyChain chain) {
         return (Getty<T>) chain.computeIfAbsent(
-            null == object ? (T) NULL_SENTINEL : object,
+            object == null ? (T) NULL_SENTINEL : object,
             __ -> new Getty<>(object, chain)
         );
     }
